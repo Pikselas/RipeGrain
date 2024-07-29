@@ -1,36 +1,46 @@
 #pragma once
-#include "RepulsiveEngine/CoreEngine.h"
-#include "RepulsiveEngine/StandardWindow.h"
+#include <list>
+#include <memory>
+#include <type_traits>
+#include "EngineComponent.h"
+
 
 namespace RipeGrain
 {
+	template<typename T>
+	concept CEngineComponent = std::is_base_of_v<EngineComponent, T>;
+
 	class Engine
 	{
 	private:
-		CoreEngine renderer;
-		StandardWindow window;
-	private:
-		WindowRenderer window_render_surface;
-	private:
-		ImageSprite sprite;
+		std::list<std::unique_ptr<EngineComponent>> components;
 	public:
-		Engine() : window("RipeGrain Engine") , window_render_surface(renderer.CreateRenderer(window))
+		Engine() = default;
+	public:
+		template<CEngineComponent Component , typename ... ParamsT>
+		Component& ConfigureWith(ParamsT... params)
 		{
-			renderer.SetRenderDevice(window_render_surface);
-			Image img("D:/wallpaperflare-cropped.jpg");
-			sprite = renderer.CreateSprite(img);
-			sprite.SetPosition(DirectX::XMVectorSet(100, 100, 0, 1));
+			auto component = std::make_unique<Component>(params...);
+			
+			if constexpr (std::is_base_of_v<EngineEventSubscriber, Component>)
+			{
+
+			}
+			
+			if constexpr (std::is_base_of_v<EngineEventRaiser, Component>)
+			{
+
+			}
+
+			auto& comp_ref = *component;
+			components.emplace_back(std::move(component));
+
+			return comp_ref;
 		}
-	public:
 		void Run()
 		{
-			while (window.IsOpen())
-			{
-				renderer.ClearFrame(window_render_surface);
-				sprite.Draw(renderer);
-				window_render_surface.RenderFrame();
-				Window::DispatchWindowEventsNonBlocking();
-			}
+			for (auto& component : components)
+				component->OnUpdate();
 		}
 	};
 }
