@@ -1,4 +1,5 @@
 #include "CustomWindow.h"
+#include "../resource.h"
 
 CustomWindow::WindowClass CustomWindow::WindowClass::wndcls;
 
@@ -11,8 +12,8 @@ CustomWindow::WindowClass::WindowClass()
 	wc.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW; //Enables window to take double click events + redrawing of window
 	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wc.lpfnWndProc = DefWindowProc;
-	//wc.hIcon = static_cast<HICON>(LoadImage(wc.hInstance, MAKEINTRESOURCE(IDI_ICON1) , IMAGE_ICON,48 , 48 , 0 ));
-	//wc.hIconSm = static_cast<HICON>(LoadImage(wc.hInstance, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 32 , 32 , 0));
+	wc.hIcon = static_cast<HICON>(LoadImage(wc.hInstance, MAKEINTRESOURCE(IDI_ICON1) , IMAGE_ICON,256 , 256 , 0 ));
+	wc.hIconSm = static_cast<HICON>(LoadImage(wc.hInstance, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 32 , 32 , 0));
 	RegisterClassEx(&wc);
 }
 
