@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClInclude Include="Engine.h" />
     <ClInclude Include="EngineComponent.h" />
+    <ClInclude Include="Event.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="RepulsiveEngine\AnimatedSprite.h" />
     <ClInclude Include="RepulsiveEngine\CoreEngine.h" />
@@ -158,6 +159,7 @@
     <ClInclude Include="RepulsiveEngine\Window.h" />
     <ClInclude Include="RepulsiveEngine\WindowRenderer.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SceneManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="RepulsiveEngine\PixelShader.hlsl">
