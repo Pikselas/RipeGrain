@@ -1,12 +1,13 @@
 #pragma once
 #include <typeindex>
 #include <optional>
+#include "RepulsiveEngine/ImageSprite.h"
 namespace RipeGrain
 {
 
-	struct EventNewObject
+	struct EventSceneLoaded
 	{
-		int x, y, z;
+		std::list<ImageSprite>* sprites;
 	};
 
 	class Event

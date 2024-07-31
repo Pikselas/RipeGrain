@@ -9,13 +9,13 @@ namespace RipeGrain
 	class RenderSystem : public EngineEventSubscriber
 	{
 	private:
-		CoreEngine renderer;
+		CoreEngine& renderer;
 	private:
 		WindowRenderer window_render_surface;
 	private:
-		std::vector<ImageSprite> sprites;
+		std::list<ImageSprite>* sprites = nullptr;
 	public:
-		RenderSystem(CustomWindow& window): window_render_surface(renderer.CreateRenderer(window))
+		RenderSystem(CoreEngine& renderer ,CustomWindow& window): renderer(renderer), window_render_surface(renderer.CreateRenderer(window))
 		{
 			renderer.SetRenderDevice(window_render_surface);
 		}
@@ -23,23 +23,20 @@ namespace RipeGrain
 		void OnUpdate() override
 		{
 			renderer.ClearFrame(window_render_surface);
-
-			for (auto& sprite : sprites)
-				sprite.Draw(renderer);
-
+			if (sprites)
+			{
+				for (auto& sprite : *sprites)
+					sprite.Draw(renderer);
+			}
 			window_render_surface.RenderFrame();
 		}
 
 		void OnEventReceive(Event& event_data) override
 		{
-			if (event_data.event_type_index == typeid(EventNewObject))
+			if (event_data.event_type_index == typeid(EventSceneLoaded))
 			{
-				auto data = GetEventData<EventNewObject>(event_data);
-				Image img{150 , 150};
-				img.Clear({ 255 , 167 , 129 , 60 });
-				auto sprite = renderer.CreateSprite(img);
-				sprite.SetPosition(DirectX::XMVectorSet(data.x, data.y, data.z , 1));
-				sprites.emplace_back(sprite);
+				auto data = GetEventData<EventSceneLoaded>(event_data);
+				sprites = data.sprites;
 			}
 		}
 	};
