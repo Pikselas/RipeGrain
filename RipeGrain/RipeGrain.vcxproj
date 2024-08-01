@@ -143,6 +143,7 @@
     <ClInclude Include="Engine.h" />
     <ClInclude Include="EngineComponent.h" />
     <ClInclude Include="Event.h" />
+    <ClInclude Include="ObjectAnimator.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="RepulsiveEngine\AnimatedSprite.h" />
     <ClInclude Include="RepulsiveEngine\CoreEngine.h" />

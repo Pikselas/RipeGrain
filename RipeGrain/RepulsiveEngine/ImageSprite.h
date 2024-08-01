@@ -34,7 +34,7 @@ public:
 		engine.Draw();
 	}
 public:
-	void SetTextureCoord(unsigned int x , unsigned int y)
+	void SetTextureCoord(unsigned int x, unsigned int y)
 	{
 		texture_coord_start_x = (float)x / texture.GetWidth();
 		texture_coord_start_y = (float)y / texture.GetHeight();
@@ -43,6 +43,10 @@ public:
 	{
 		texture_coord_width = (float)width / texture.GetWidth();
 		texture_coord_height = (float)height / texture.GetHeight();
+	}
+	void SetTexture(Texture tex)
+	{
+		texture = tex;
 	}
 public:
 	unsigned int GetWidth() const
