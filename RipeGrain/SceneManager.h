@@ -6,7 +6,6 @@
 
 namespace RipeGrain
 {
-	
 	class Scene
 	{
 	private:
@@ -56,7 +55,7 @@ namespace RipeGrain
 		}
 	};
 
-	class SceneManager : public EngineEventRaiser
+	class SceneManager : public EngineEventRaiser , public EngineEventSubscriber
 	{
 	private:
 		std::list<std::unique_ptr<ObjectAnimator>>* animators = nullptr;
@@ -82,6 +81,12 @@ namespace RipeGrain
 				for (auto& animator : *animators)
 					animator->Animate();
 		}
+		void OnEventReceive(Event& ev) override
+		{
+			if (ev.event_type_index == typeid(EventMouseInput))
+			{
+				
+			}
+		}
 	};
-
 }

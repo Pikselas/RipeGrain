@@ -10,6 +10,20 @@ namespace RipeGrain
 		std::list<ImageSprite>* sprites;
 	};
 
+	struct EventMouseInput
+	{
+		enum class Type
+		{
+			Move,
+			LeftPress, 
+			RightPress,
+			LeftDoublePress,
+			RightDoublePress
+		};
+		Type type;
+		int x_pos, y_pos;
+	};
+
 	class Event
 	{
 		enum class Type
@@ -29,15 +43,13 @@ namespace RipeGrain
 	public:
 		EventType data;
 	public:
-		EventObject() : Event(typeid(EventType)) {}
+		EventObject(EventType data) : Event(typeid(EventType)) , data(data) {}
 	};
 
 	template<typename T>
 	EventObject<T> CreateEventObject(T data)
 	{
-		EventObject<T> object;
-		object.data = data;
-		return object;
+		return EventObject<T>{data};
 	}
 
 	template<typename T> 

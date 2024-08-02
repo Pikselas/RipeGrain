@@ -104,6 +104,9 @@
     <ClInclude Include="ObjectAnimator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="InputSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="RepulsiveEngine\PixelShader.hlsl">
