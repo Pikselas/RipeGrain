@@ -1,7 +1,8 @@
 #pragma once
 #include <list>
-#include "EngineComponent.h"
+#include "SceneObject.h"
 #include "ObjectAnimator.h"
+#include "EngineComponent.h"
 #include "RepulsiveEngine/CoreEngine.h"
 
 namespace RipeGrain
@@ -17,13 +18,21 @@ namespace RipeGrain
 	public:
 		Scene(CoreEngine& engine) : sprite_engine(engine) {}
 	public:
-		ImageSprite& AddSprite(ImageSprite sprite)
+		SceneObject AddSprite(SceneObject object)
 		{
-			return sprites.emplace_back(sprite);
+			sprites.emplace_back(*object.object_ref);
+			return  SceneObject{ std::prev(sprites.end()) , sprites};
 		}
-		ImageSprite& AddSprite(const Image& img)
+		SceneObject AddSprite(const Image& img)
 		{
-			return sprites.emplace_back(sprite_engine.CreateSprite(img));
+			sprites.emplace_back(sprite_engine.CreateSprite(img));
+			return  SceneObject{ std::prev(sprites.end()) , sprites };
+		}
+		SceneObject AddSprite(const Image& img , unsigned int width , unsigned int height)
+		{
+
+			sprites.emplace_back(sprite_engine.CreateSprite(sprite_engine.CreateTexture(img), width, height));
+			return  SceneObject{ std::prev(sprites.end()) , sprites };
 		}
 	public:
 		void AddObjectAnimator(std::unique_ptr<ObjectAnimator> animator)

@@ -1,7 +1,7 @@
 #pragma once
 #include <chrono>
 #include <optional>
-#include "RepulsiveEngine/ImageSprite.h"
+#include "SceneObject.h"
 namespace RipeGrain
 {
 	class ObjectAnimator
@@ -17,7 +17,7 @@ namespace RipeGrain
 	private:
 		std::optional<std::chrono::steady_clock::time_point> last_frame_time;
 	public:
-		ObjectAnimator(ImageSprite& sprite , unsigned int frame_count , float duration) :  sprite(sprite) , per_frame_duration(duration /(float)frame_count) , total_frame_count(frame_count) {}
+		ObjectAnimator(SceneObject object , unsigned int frame_count , float duration) :  sprite(*object.object_ref) , per_frame_duration(duration /(float)frame_count) , total_frame_count(frame_count) {}
 	protected:
 		virtual void SetObjectFrame(unsigned int frame_index) = 0;
 	public:
@@ -46,9 +46,9 @@ namespace RipeGrain
 	private:
 		std::vector<std::pair<unsigned int, unsigned int>> sheet_offsets;
 	public:
-		SpriteSheetAnimator(ImageSprite& sprite , std::vector<std::pair<unsigned int, unsigned int>> sheet_offsets , float duration_ms) 
+		SpriteSheetAnimator(SceneObject object , std::vector<std::pair<unsigned int, unsigned int>> sheet_offsets , float duration_ms) 
 			:
-		 ObjectAnimator(sprite , sheet_offsets.size() , duration_ms) , sheet_offsets(sheet_offsets)
+		 ObjectAnimator(object , sheet_offsets.size() , duration_ms) , sheet_offsets(sheet_offsets)
 		{}
 	protected:
 		void SetObjectFrame(unsigned int frame_index) override
@@ -63,9 +63,9 @@ namespace RipeGrain
 	private:
 		std::vector<Texture> textures;
 	public:
-		TextureBatchAnimator(ImageSprite& sprite, std::vector<Texture> textures, float duration_ms)
+		TextureBatchAnimator(SceneObject object, std::vector<Texture> textures, float duration_ms)
 			:
-			ObjectAnimator(sprite  , textures.size() , duration_ms) , textures(textures)
+			ObjectAnimator(object, textures.size() , duration_ms) , textures(textures)
 		{}
 	protected:
 		void SetObjectFrame(unsigned int frame_index) override

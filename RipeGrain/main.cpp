@@ -11,13 +11,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	RipeGrain::SceneLoader scene_loader;
 	StandardWindow window("RipeGrain - The Engine");
 
-	engine.ConfigureWith<RipeGrain::InputSystem>(window.mouse);
+	//engine.ConfigureWith<RipeGrain::InputSystem>(window.mouse);
 	engine.ConfigureWith<RipeGrain::SceneManager>(scene_loader);
 	engine.ConfigureWith<RipeGrain::RenderSystem>(render_engine , window);
 
 	RipeGrain::Scene scene1(render_engine);
 	
-	auto sprite1 = render_engine.CreateSprite(render_engine.CreateTexture(Image{ "D:/ASSET/ninja_walk_50_frames.png" }), 106, 178);
+	auto object = scene1.AddSprite(Image{ "D:/ASSET/ninja_walk_50_frames.png" }, 106, 178);
 	auto anim_frames = []() -> std::vector<std::pair<unsigned int, unsigned int>>
 	{
 		std::vector<std::pair<unsigned int, unsigned int>> v;
@@ -28,8 +28,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		return v;
 	}();
 	
-	sprite1.SetPosition(DirectX::XMVectorSet(window.GetWidth() / 2, window.GetHeight() / 2, 0, 1));
-	scene1.AddObjectAnimator(std::make_unique<RipeGrain::SpriteSheetAnimator>(scene1.AddSprite(sprite1), anim_frames , 4000));
+	object.SetPosition(window.GetWidth() / 2, window.GetHeight() / 2);
+	scene1.AddObjectAnimator(std::make_unique<RipeGrain::SpriteSheetAnimator>(object, anim_frames , 4000));
 
 	scene_loader.Load(scene1);
 
