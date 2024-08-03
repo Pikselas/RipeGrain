@@ -96,6 +96,10 @@ namespace RipeGrain
 			{
 				
 			}
+			else if (ev.event_type_index == typeid(EventKeyBoardInput))
+			{
+				
+			}
 		}
 	};
 }

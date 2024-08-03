@@ -24,6 +24,17 @@ namespace RipeGrain
 		int x_pos, y_pos;
 	};
 
+	struct EventKeyBoardInput
+	{
+		enum class Type
+		{
+			KeyPress,
+			KeyRelease
+		};
+		Type type;
+		unsigned char key_code;
+	};
+
 	class Event
 	{
 		enum class Type

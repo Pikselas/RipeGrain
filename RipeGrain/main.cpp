@@ -11,8 +11,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	RipeGrain::SceneLoader scene_loader;
 	StandardWindow window("RipeGrain - The Engine");
 
-	//engine.ConfigureWith<RipeGrain::InputSystem>(window.mouse);
+	engine.ConfigureWith<RipeGrain::InputSystem>(window.mouse);
 	engine.ConfigureWith<RipeGrain::SceneManager>(scene_loader);
+	engine.ConfigureWith<RipeGrain::InputSystem>(window.keyboard);
 	engine.ConfigureWith<RipeGrain::RenderSystem>(render_engine , window);
 
 	RipeGrain::Scene scene1(render_engine);
