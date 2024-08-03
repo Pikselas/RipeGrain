@@ -9,6 +9,9 @@ namespace RipeGrain
 {
 	class Scene
 	{
+	public:
+		std::function<void(EventMouseInput)> OnMouseInput;
+		std::function<void(EventKeyBoardInput)> OnKeyBoardInput;
 	private:
 		CoreEngine& sprite_engine;
 	private:
@@ -40,6 +43,12 @@ namespace RipeGrain
 			animators.emplace_back(std::move(animator));
 		}
 	public:
+		void Update()
+		{
+			for (auto& animator : animators)
+				animator->Animate();
+		}
+	public:
 		std::list<ImageSprite>& GetSpriteList()
 		{
 			return sprites;
@@ -67,7 +76,7 @@ namespace RipeGrain
 	class SceneManager : public EngineEventRaiser , public EngineEventSubscriber
 	{
 	private:
-		std::list<std::unique_ptr<ObjectAnimator>>* animators = nullptr;
+		Scene* current_scene = nullptr;
 	public:
 		SceneManager(SceneLoader& scene_loader)
 		{
@@ -79,26 +88,29 @@ namespace RipeGrain
 	private:
 		void onSceneLoad(Scene& scene)
 		{
-			animators = &scene.GetAnimators();
+			current_scene = &scene;
 			auto scene_event = std::make_unique<EventObject<EventSceneLoaded>>(CreateEventObject(EventSceneLoaded{&scene.GetSpriteList()}));
 			RaiseEvent(std::move(scene_event));
 		}
 	public:
 		void OnUpdate() override
 		{
-			if (animators)
-				for (auto& animator : *animators)
-					animator->Animate();
+			if (current_scene)
+			{
+				current_scene->Update();
+			}
 		}
 		void OnEventReceive(Event& ev) override
 		{
 			if (ev.event_type_index == typeid(EventMouseInput))
 			{
-				
+				if (current_scene && current_scene->OnMouseInput)
+					current_scene->OnMouseInput(GetEventData<EventMouseInput>(ev));
 			}
 			else if (ev.event_type_index == typeid(EventKeyBoardInput))
 			{
-				
+				if (current_scene && current_scene->OnKeyBoardInput)
+					current_scene->OnKeyBoardInput(GetEventData<EventKeyBoardInput>(ev));
 			}
 		}
 	};

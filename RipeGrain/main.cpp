@@ -10,6 +10,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	RipeGrain::Engine engine;
 	RipeGrain::SceneLoader scene_loader;
 	StandardWindow window("RipeGrain - The Engine");
+	window.keyboard.EnableKeyRepeat();
 
 	engine.ConfigureWith<RipeGrain::InputSystem>(window.mouse);
 	engine.ConfigureWith<RipeGrain::SceneManager>(scene_loader);
@@ -31,6 +32,29 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	
 	object.SetPosition(window.GetWidth() / 2, window.GetHeight() / 2);
 	scene1.AddObjectAnimator(std::make_unique<RipeGrain::SpriteSheetAnimator>(object, anim_frames , 4000));
+
+	scene1.OnKeyBoardInput = [object](RipeGrain::EventKeyBoardInput ev) mutable
+		{
+			int x = object.GetX();
+			int y = object.GetY();
+			
+			switch (ev.key_code)
+			{
+			case 'W':
+				y -= 10;
+				break;
+			case 'A':
+				x -= 10;
+				break;
+			case 'S':
+				y += 10;
+				break;
+			case 'D':
+				x += 10;
+			}
+
+			object.SetPosition(x, y);
+		};
 
 	scene_loader.Load(scene1);
 
