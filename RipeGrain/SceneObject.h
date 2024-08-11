@@ -11,8 +11,7 @@ namespace RipeGrain
 		std::list<ImageSprite>::iterator object_ref;
 		std::reference_wrapper<std::list<ImageSprite>> objects;
 	public:
-		SceneObject(std::list<ImageSprite>::iterator object_ref , std::list<ImageSprite>& objects) : object_ref(object_ref) , objects(objects)
-		{}
+		SceneObject(std::list<ImageSprite>::iterator object_ref , std::list<ImageSprite>& objects) : object_ref(object_ref) , objects(objects) {}
 	public:
 		void SetX(int x)
 		{

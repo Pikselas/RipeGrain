@@ -144,6 +144,7 @@
     <ClInclude Include="EngineComponent.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="InputSystem.h" />
+    <ClInclude Include="MainScene.h" />
     <ClInclude Include="ObjectAnimator.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="RepulsiveEngine\AnimatedSprite.h" />

@@ -22,7 +22,7 @@ namespace RipeGrain
 			else
 			{
 				device.OnKeyPress = [this](auto ev) { raiseInputEvent(ConstructEvent(EventKeyBoardInput::Type::KeyPress, ev.KEY_CODE));};
-				device.OnKeyPress = [this](auto ev) { raiseInputEvent(ConstructEvent(EventKeyBoardInput::Type::KeyRelease, ev.KEY_CODE)); };
+				device.OnKeyRelease = [this](auto ev) { raiseInputEvent(ConstructEvent(EventKeyBoardInput::Type::KeyRelease, ev.KEY_CODE)); };
 			}
 		}
 	private:

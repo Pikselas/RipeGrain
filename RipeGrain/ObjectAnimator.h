@@ -35,9 +35,21 @@ namespace RipeGrain
 			if (elapsed >= per_frame_duration)
 			{
 				auto diff = elapsed - per_frame_duration;
-				SetObjectFrame((current_frame_index += 1 + diff) % total_frame_count);
+				current_frame_index += (1 + diff);
+				if (current_frame_index >= total_frame_count)
+				{
+					SetObjectFrame(current_frame_index = 0);
+					last_frame_time = std::nullopt;
+					return;
+				}
+				SetObjectFrame(current_frame_index);
 				last_frame_time = std::chrono::steady_clock::now();
 			}
+		}
+	public:
+		bool IsStopped()
+		{
+			return !(last_frame_time.has_value());
 		}
 	};
 
@@ -71,6 +83,29 @@ namespace RipeGrain
 		void SetObjectFrame(unsigned int frame_index) override
 		{
 			sprite.SetTexture(textures[frame_index]);
+		}
+	};
+
+	class PositionAnimator : public ObjectAnimator
+	{
+	private:
+		int velocity;
+		int start_x;
+		int end_x;
+	public:
+		PositionAnimator(SceneObject object, int start_x, int end_x, float duration_ms) 
+			:
+		 ObjectAnimator(object ,  std::abs(end_x - start_x) , duration_ms) , start_x(start_x) , end_x(end_x)
+		{
+			velocity = start_x < end_x ? 1 : -1;
+		}
+	protected:
+		void SetObjectFrame(unsigned int index) override
+		{
+			int new_x = start_x + index * velocity;
+			int old_y = DirectX::XMVectorGetY(sprite.GetPosition());
+			int old_z = DirectX::XMVectorGetZ(sprite.GetPosition());
+			sprite.SetPosition(DirectX::XMVectorSet(new_x, old_y, old_z , 1));
 		}
 	};
 }

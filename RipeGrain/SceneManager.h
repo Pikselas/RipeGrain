@@ -1,5 +1,6 @@
 #pragma once
 #include <list>
+#include <unordered_map>
 #include "SceneObject.h"
 #include "ObjectAnimator.h"
 #include "EngineComponent.h"
@@ -7,6 +8,8 @@
 
 namespace RipeGrain
 {
+	class SceneLoader;
+
 	class Scene
 	{
 	public:
@@ -14,12 +17,16 @@ namespace RipeGrain
 		std::function<void(EventKeyBoardInput)> OnKeyBoardInput;
 	private:
 		CoreEngine& sprite_engine;
+	protected:
+		SceneLoader& scene_loader;
 	private:
 		std::list<ImageSprite> sprites;
 	private:
+		std::unordered_map<std::string, SceneObject> object_id_list;
+	private:
 		std::list<std::unique_ptr<ObjectAnimator>> animators;
 	public:
-		Scene(CoreEngine& engine) : sprite_engine(engine) {}
+		Scene(CoreEngine& engine , SceneLoader& scene_loader) : sprite_engine(engine) , scene_loader(scene_loader) {}
 	public:
 		SceneObject AddSprite(SceneObject object)
 		{
@@ -33,9 +40,20 @@ namespace RipeGrain
 		}
 		SceneObject AddSprite(const Image& img , unsigned int width , unsigned int height)
 		{
-
 			sprites.emplace_back(sprite_engine.CreateSprite(sprite_engine.CreateTexture(img), width, height));
 			return  SceneObject{ std::prev(sprites.end()) , sprites };
+		}
+		SceneObject AddSprite(std::string Id , auto&& ... sprite_data)
+		{
+			return (*(object_id_list.insert({ Id, AddSprite(sprite_data...) }).first)).second;
+		}
+	public:
+		std::optional<SceneObject> GetObjectById(std::string Id) const
+		{
+			auto object = object_id_list.find(Id);
+			if(object != object_id_list.end())
+				return object->second;
+			return std::nullopt;
 		}
 	public:
 		void AddObjectAnimator(std::unique_ptr<ObjectAnimator> animator)
@@ -43,7 +61,7 @@ namespace RipeGrain
 			animators.emplace_back(std::move(animator));
 		}
 	public:
-		void Update()
+		virtual void Update()
 		{
 			for (auto& animator : animators)
 				animator->Animate();
@@ -63,13 +81,18 @@ namespace RipeGrain
 	{
 	public:
 		std::function<void(Scene&)> OnSceneLoaded;
+	private:
+		CoreEngine& sprite_engine;
+		std::unique_ptr<Scene> current_scene;
 	public:
-		void Load(Scene& scene)
+		SceneLoader(CoreEngine& sprite_engine) : sprite_engine(sprite_engine) {}
+	public:
+		template<typename T>
+		void LoadScene()
 		{
+			current_scene = std::make_unique<T>(sprite_engine , *this);
 			if (OnSceneLoaded)
-			{
-				OnSceneLoaded(scene);
-			}
+				OnSceneLoaded(*current_scene);
 		}
 	};
 
