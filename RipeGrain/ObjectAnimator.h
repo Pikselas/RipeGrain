@@ -12,18 +12,16 @@ namespace RipeGrain
 		unsigned int total_frame_count;
 	private:
 		unsigned int current_frame_index = 0;
-	protected:
-		ImageSprite& sprite;
 	private:
 		std::optional<std::chrono::steady_clock::time_point> last_frame_time;
 	public:
-		ObjectAnimator(SceneObject object , unsigned int frame_count , float duration) :  sprite(*object.object_ref) , per_frame_duration(duration /(float)frame_count) , total_frame_count(frame_count) {}
+		ObjectAnimator(unsigned int frame_count , float duration) : per_frame_duration(duration /(float)frame_count) , total_frame_count(frame_count) {}
 	protected:
-		virtual void SetObjectFrame(unsigned int frame_index) = 0;
+		virtual void SetObjectFrame(ImageSprite& sprite , unsigned int frame_index) = 0;
 	public:
 		virtual ~ObjectAnimator() = default;
 	public:
-		void Animate()
+		void Animate(ImageSprite& sprite)
 		{
 			if (!last_frame_time.has_value())
 			{
@@ -38,11 +36,11 @@ namespace RipeGrain
 				current_frame_index += (1 + diff);
 				if (current_frame_index >= total_frame_count)
 				{
-					SetObjectFrame(current_frame_index = 0);
+					SetObjectFrame(sprite , current_frame_index = 0);
 					last_frame_time = std::nullopt;
 					return;
 				}
-				SetObjectFrame(current_frame_index);
+				SetObjectFrame( sprite, current_frame_index);
 				last_frame_time = std::chrono::steady_clock::now();
 			}
 		}
@@ -58,12 +56,12 @@ namespace RipeGrain
 	private:
 		std::vector<std::pair<unsigned int, unsigned int>> sheet_offsets;
 	public:
-		SpriteSheetAnimator(SceneObject object , std::vector<std::pair<unsigned int, unsigned int>> sheet_offsets , float duration_ms) 
+		SpriteSheetAnimator(std::vector<std::pair<unsigned int, unsigned int>> sheet_offsets , float duration_ms) 
 			:
-		 ObjectAnimator(object , sheet_offsets.size() , duration_ms) , sheet_offsets(sheet_offsets)
+		 ObjectAnimator(sheet_offsets.size() , duration_ms) , sheet_offsets(sheet_offsets)
 		{}
 	protected:
-		void SetObjectFrame(unsigned int frame_index) override
+		void SetObjectFrame(ImageSprite& sprite , unsigned int frame_index) override
 		{
 			auto [x, y] = sheet_offsets[frame_index];
 			sprite.SetTextureCoord(x, y);
@@ -75,12 +73,12 @@ namespace RipeGrain
 	private:
 		std::vector<Texture> textures;
 	public:
-		TextureBatchAnimator(SceneObject object, std::vector<Texture> textures, float duration_ms)
+		TextureBatchAnimator(std::vector<Texture> textures, float duration_ms)
 			:
-			ObjectAnimator(object, textures.size() , duration_ms) , textures(textures)
+			ObjectAnimator(textures.size() , duration_ms) , textures(textures)
 		{}
 	protected:
-		void SetObjectFrame(unsigned int frame_index) override
+		void SetObjectFrame(ImageSprite& sprite , unsigned int frame_index) override
 		{
 			sprite.SetTexture(textures[frame_index]);
 		}
@@ -93,14 +91,14 @@ namespace RipeGrain
 		int start_x;
 		int end_x;
 	public:
-		PositionAnimator(SceneObject object, int start_x, int end_x, float duration_ms) 
+		PositionAnimator(int start_x, int end_x, float duration_ms) 
 			:
-		 ObjectAnimator(object ,  std::abs(end_x - start_x) , duration_ms) , start_x(start_x) , end_x(end_x)
+		 ObjectAnimator(std::abs(end_x - start_x) , duration_ms) , start_x(start_x) , end_x(end_x)
 		{
 			velocity = start_x < end_x ? 1 : -1;
 		}
 	protected:
-		void SetObjectFrame(unsigned int index) override
+		void SetObjectFrame(ImageSprite& sprite , unsigned int index) override
 		{
 			int new_x = start_x + index * velocity;
 			int old_y = DirectX::XMVectorGetY(sprite.GetPosition());

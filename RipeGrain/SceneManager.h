@@ -1,6 +1,5 @@
 #pragma once
 #include <list>
-#include <unordered_map>
 #include "SceneObject.h"
 #include "ObjectAnimator.h"
 #include "EngineComponent.h"
@@ -8,74 +7,10 @@
 
 namespace RipeGrain
 {
-	class SceneLoader;
-
-	class Scene
-	{
-	public:
-		std::function<void(EventMouseInput)> OnMouseInput;
-		std::function<void(EventKeyBoardInput)> OnKeyBoardInput;
-	private:
-		CoreEngine& sprite_engine;
-	protected:
-		SceneLoader& scene_loader;
-	private:
-		std::list<ImageSprite> sprites;
-	private:
-		std::unordered_map<std::string, SceneObject> object_id_list;
-	private:
-		std::list<std::unique_ptr<ObjectAnimator>> animators;
-	public:
-		Scene(CoreEngine& engine , SceneLoader& scene_loader) : sprite_engine(engine) , scene_loader(scene_loader) {}
-	public:
-		SceneObject AddSprite(SceneObject object)
-		{
-			sprites.emplace_back(*object.object_ref);
-			return  SceneObject{ std::prev(sprites.end()) , sprites};
-		}
-		SceneObject AddSprite(const Image& img)
-		{
-			sprites.emplace_back(sprite_engine.CreateSprite(img));
-			return  SceneObject{ std::prev(sprites.end()) , sprites };
-		}
-		SceneObject AddSprite(const Image& img , unsigned int width , unsigned int height)
-		{
-			sprites.emplace_back(sprite_engine.CreateSprite(sprite_engine.CreateTexture(img), width, height));
-			return  SceneObject{ std::prev(sprites.end()) , sprites };
-		}
-		SceneObject AddSprite(std::string Id , auto&& ... sprite_data)
-		{
-			return (*(object_id_list.insert({ Id, AddSprite(sprite_data...) }).first)).second;
-		}
-	public:
-		std::optional<SceneObject> GetObjectById(std::string Id) const
-		{
-			auto object = object_id_list.find(Id);
-			if(object != object_id_list.end())
-				return object->second;
-			return std::nullopt;
-		}
-	public:
-		void AddObjectAnimator(std::unique_ptr<ObjectAnimator> animator)
-		{
-			animators.emplace_back(std::move(animator));
-		}
-	public:
-		virtual void Update()
-		{
-			for (auto& animator : animators)
-				animator->Animate();
-		}
-	public:
-		std::list<ImageSprite>& GetSpriteList()
-		{
-			return sprites;
-		}
-		std::list<std::unique_ptr<ObjectAnimator>>& GetAnimators()
-		{
-			return animators;
-		}
-	};
+	template<typename T>
+	concept CSceneObject = std::is_base_of_v<SceneObject,T>;
+	
+	class Scene;
 
 	class SceneLoader
 	{
@@ -87,12 +22,52 @@ namespace RipeGrain
 	public:
 		SceneLoader(CoreEngine& sprite_engine) : sprite_engine(sprite_engine) {}
 	public:
-		template<typename T>
-		void LoadScene()
+		template<typename T, typename... ParamsT>
+		void LoadScene(ParamsT&& ... params)
 		{
-			current_scene = std::make_unique<T>(sprite_engine , *this);
+			current_scene = std::make_unique<T>(sprite_engine, *this, params...);
 			if (OnSceneLoaded)
 				OnSceneLoaded(*current_scene);
+		}
+	};
+
+	class Scene
+	{
+	public:
+		std::function<void(EventMouseInput)> OnMouseInput;
+		std::function<void(EventKeyBoardInput)> OnKeyBoardInput;
+	private:
+		CoreEngine& sprite_engine;
+		SceneLoader& scene_loader;
+	private:
+		std::list<std::unique_ptr<SceneObject>> objects;
+	public:
+		using SceneObjectRef = std::list<std::unique_ptr<SceneObject>>::iterator;
+	public:
+		Scene(CoreEngine& engine , SceneLoader& scene_loader) : sprite_engine(engine) , scene_loader(scene_loader) {}
+		virtual ~Scene() = default;
+	public:
+		template<CSceneObject SceneObjectT>
+		SceneObjectT* AddObject()
+		{
+			return dynamic_cast<SceneObjectT*>(objects.emplace_back(std::make_unique<SceneObjectT>(sprite_engine)).get());
+		}
+	protected:
+		template<typename T , typename... ParamsT>
+		void LoadScene(ParamsT&& ... params)
+		{
+			scene_loader.LoadScene<T>(params...);
+		}
+	public:
+		virtual void Update() 
+		{
+			for (auto& object : objects)
+				object->Update();
+		}
+	public:
+		std::list<std::unique_ptr<SceneObject>>& GetObjectList()
+		{
+			return objects;
 		}
 	};
 
@@ -112,7 +87,7 @@ namespace RipeGrain
 		void onSceneLoad(Scene& scene)
 		{
 			current_scene = &scene;
-			auto scene_event = std::make_unique<EventObject<EventSceneLoaded>>(CreateEventObject(EventSceneLoaded{&scene.GetSpriteList()}));
+			auto scene_event = std::make_unique<EventObject<EventSceneLoaded>>(CreateEventObject(EventSceneLoaded{&scene.GetObjectList()}));
 			RaiseEvent(std::move(scene_event));
 		}
 	public:

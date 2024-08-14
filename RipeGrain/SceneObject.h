@@ -1,59 +1,94 @@
 #pragma once
-#include <list>
-#include "RepulsiveEngine/ImageSprite.h"
+#include <vector>
+#include "RepulsiveEngine/CoreEngine.h"
 namespace RipeGrain
 {
 	class SceneObject
 	{
-		friend class Scene;
-		friend class ObjectAnimator;
 	private:
-		std::list<ImageSprite>::iterator object_ref;
-		std::reference_wrapper<std::list<ImageSprite>> objects;
+		CoreEngine& sprite_engine;
+	protected:
+		DirectX::XMVECTOR position;
+	protected:
+		std::vector<ImageSprite> sprites;
 	public:
-		SceneObject(std::list<ImageSprite>::iterator object_ref , std::list<ImageSprite>& objects) : object_ref(object_ref) , objects(objects) {}
+		SceneObject(CoreEngine& sprite_engine) : sprite_engine(sprite_engine) , position(DirectX::XMVectorZero()){}
+		virtual ~SceneObject() = default;
 	public:
-		void SetX(int x)
+		inline ImageSprite CreateSprite(const Image& img)
 		{
-			SetPosition(x, GetY());
+			return sprite_engine.CreateSprite(img);
 		}
-		void SetY(int y)
+		inline ImageSprite CreateSprite(Texture texture)
 		{
-			SetPosition(GetX(), y);
+			return sprite_engine.CreateSprite(texture, texture.GetWidth(), texture.GetHeight());
 		}
-		void SetZ(int z)
+		inline ImageSprite CreateSprite(Texture texture, unsigned int width, unsigned int height)
 		{
-			SetPosition(GetX(), GetY(), z);
+			return sprite_engine.CreateSprite(texture, width, height);
 		}
-		void SetPosition(int x, int y)
+	public:
+		inline Texture CreateTexture(const Image& img)
+		{
+			return sprite_engine.CreateTexture(img);
+		}
+	public:
+		inline void AddSprite(ImageSprite sprite)
+		{
+			sprites.emplace_back(sprite);
+		}
+	public:
+		std::vector<ImageSprite>& GetSprites()
+		{
+			return sprites;
+		}
+	public:
+		virtual void Update() {}
+	public:
+		inline void SetX(int x)
+		{
+			position = DirectX::XMVectorSetX(position, x);
+		}
+		inline void SetY(int y)
+		{
+			position = DirectX::XMVectorSetY(position, y);
+		}
+		inline void SetZ(int z)
+		{
+			position = DirectX::XMVectorSetZ(position, z);
+		}
+		inline void SetPosition(int x, int y)
 		{
 			SetPosition(x, y, GetZ());
 		}
-		void SetPosition(int x, int y, int z)
+		inline void SetPosition(int x , int y , int z)
 		{
-			object_ref->SetPosition(DirectX::XMVectorSet(x, y, z , 1));
+			position = DirectX::XMVectorSet(x, y, z, 1);
+		}
+		inline void SetPosition(DirectX::XMVECTOR position)
+		{
+			this->position = position;
 		}
 	public:
-		int GetX() const
+		inline int GetX() const
 		{
-			return DirectX::XMVectorGetX(object_ref->GetPosition());
+			return DirectX::XMVectorGetX(position);
 		}
-		int GetY() const
+		inline int GetY() const
 		{
-			return DirectX::XMVectorGetY(object_ref->GetPosition());
+			return DirectX::XMVectorGetY(position);
 		}
-		int GetZ() const
+		inline int GetZ() const
 		{
-			return DirectX::XMVectorGetZ(object_ref->GetPosition());
+			return DirectX::XMVectorGetZ(position);
 		}
-		DirectX::XMVECTOR GetPosition() const
-		{	
-			return object_ref->GetPosition();
-		}
-	public:
-		void Remove()
+		inline std::pair<int , int> GetXY() const
 		{
-			objects.get().erase(object_ref);
+			return { GetX() , GetY() };
+		}
+		inline DirectX::XMVECTOR GetPosition() const
+		{
+			return position;
 		}
 	};
 }
