@@ -2,8 +2,19 @@
 #include <typeindex>
 #include <optional>
 #include "SceneObject.h"
+#include "BoxCollider.h"
 namespace RipeGrain
 {
+
+	struct EventCollidersAdded
+	{
+		std::vector<BoxCollider> colliders;
+	};
+
+	struct EventCollisionDetected
+	{
+		std::vector<std::pair<BoxCollider, BoxCollider>> collision_list;
+	};
 
 	struct EventSceneLoaded
 	{

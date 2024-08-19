@@ -16,6 +16,7 @@ namespace RipeGrain
 	{
 	public:
 		std::function<void(Scene&)> OnSceneLoaded;
+		std::function<void(std::unique_ptr<Event>)> SceneEventRaiser;
 	private:
 		CoreEngine& sprite_engine;
 		std::unique_ptr<Scene> current_scene;
@@ -29,13 +30,14 @@ namespace RipeGrain
 			if (OnSceneLoaded)
 				OnSceneLoaded(*current_scene);
 		}
+		void RegisterEvent(std::unique_ptr<Event> ev)
+		{
+			SceneEventRaiser(std::move(ev));
+		}
 	};
 
 	class Scene
 	{
-	public:
-		std::function<void(EventMouseInput)> OnMouseInput;
-		std::function<void(EventKeyBoardInput)> OnKeyBoardInput;
 	private:
 		CoreEngine& sprite_engine;
 		SceneLoader& scene_loader;
@@ -52,6 +54,10 @@ namespace RipeGrain
 		{
 			return dynamic_cast<SceneObjectT*>(objects.emplace_back(std::make_unique<SceneObjectT>(sprite_engine)).get());
 		}
+		inline void RegisterEvent(std::unique_ptr<Event> ev)
+		{
+			scene_loader.RegisterEvent(std::move(ev));
+		}
 	protected:
 		template<typename T , typename... ParamsT>
 		void LoadScene(ParamsT&& ... params)
@@ -63,6 +69,10 @@ namespace RipeGrain
 		{
 			for (auto& object : objects)
 				object->Update();
+		}
+		virtual void OnEventReceive(Event& ev)
+		{
+
 		}
 	public:
 		std::list<std::unique_ptr<SceneObject>>& GetObjectList()
@@ -82,6 +92,10 @@ namespace RipeGrain
 				{
 					onSceneLoad(scene);
 				};
+			scene_loader.SceneEventRaiser = [this](std::unique_ptr<Event> ev)
+				{
+					RaiseEvent(std::move(ev));
+				};
 		}
 	private:
 		void onSceneLoad(Scene& scene)
@@ -100,16 +114,8 @@ namespace RipeGrain
 		}
 		void OnEventReceive(Event& ev) override
 		{
-			if (ev.event_type_index == typeid(EventMouseInput))
-			{
-				if (current_scene && current_scene->OnMouseInput)
-					current_scene->OnMouseInput(GetEventData<EventMouseInput>(ev));
-			}
-			else if (ev.event_type_index == typeid(EventKeyBoardInput))
-			{
-				if (current_scene && current_scene->OnKeyBoardInput)
-					current_scene->OnKeyBoardInput(GetEventData<EventKeyBoardInput>(ev));
-			}
+			if (current_scene)
+				current_scene->OnEventReceive(ev);
 		}
 	};
 }

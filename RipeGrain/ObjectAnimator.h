@@ -45,6 +45,11 @@ namespace RipeGrain
 			}
 		}
 	public:
+		void Stop()
+		{
+			last_frame_time = std::nullopt;
+		}
+	public:
 		bool IsStopped()
 		{
 			return !(last_frame_time.has_value());
