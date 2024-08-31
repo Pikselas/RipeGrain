@@ -14,7 +14,11 @@ namespace RipeGrain
 			if (ev.event_type_index == typeid(EventCollidersAdded))
 			{
 				auto data = GetEventData<EventCollidersAdded>(ev);
-				colliders = data.colliders;
+				std::copy(data.colliders.begin(), data.colliders.end(), std::back_inserter(colliders));
+			}
+			else if (ev.event_type_index == typeid(EventSceneLoaded))
+			{
+				colliders.clear();
 			}
 		}
 	public:
@@ -26,7 +30,7 @@ namespace RipeGrain
 			});
 
 			std::vector<std::pair<BoxCollider , BoxCollider>> collision_list;
-			for (unsigned int i = 0; i < colliders.size() - 1; ++i)
+			for (int i = 0; i < int(colliders.size()) - 1; ++i)
 			{
 				if (colliders[i].TestCollision(colliders[i + 1]))
 					collision_list.emplace_back(colliders[i], colliders[i + 1]);

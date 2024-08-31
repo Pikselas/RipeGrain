@@ -29,10 +29,11 @@ namespace RipeGrain
 				return;
 			}
 
-			auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - *last_frame_time).count();
+			float elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - *last_frame_time).count();
+			OutputDebugString((std::to_string(elapsed) + "\n").c_str());
 			if (elapsed >= per_frame_duration)
 			{
-				auto diff = elapsed - per_frame_duration;
+				auto diff = std::clamp(elapsed - per_frame_duration ,0.f , 1.f);
 				current_frame_index += (1 + diff);
 				if (current_frame_index >= total_frame_count)
 				{

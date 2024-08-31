@@ -13,7 +13,8 @@ namespace RipeGrain
 	private:
 		WindowRenderer window_render_surface;
 	private:
-		std::list<std::unique_ptr<SceneObject>>* objects = nullptr;
+		const DirectX::XMVECTOR* base_position = nullptr;
+		const std::list<std::unique_ptr<SceneObject>>* objects = nullptr;
 	public:
 		RenderSystem(CoreEngine& renderer ,CustomWindow& window): renderer(renderer), window_render_surface(renderer.CreateRenderer(window))
 		{
@@ -30,7 +31,7 @@ namespace RipeGrain
 					auto pos = object->GetPosition();
 					for (auto sprite : object->GetSprites())
 					{
-						sprite.SetPosition(DirectX::XMVectorAdd(sprite.GetPosition(), pos));
+						sprite.SetPosition(DirectX::XMVectorAdd(DirectX::XMVectorAdd(sprite.GetPosition(), pos),*base_position));
 						sprite.Draw(renderer);
 					}
 				}
@@ -44,6 +45,7 @@ namespace RipeGrain
 			{
 				auto data = GetEventData<EventSceneLoaded>(event_data);
 				objects = data.objects;
+				base_position = data.scene_position;
 			}
 		}
 	};

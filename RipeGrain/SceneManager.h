@@ -42,11 +42,13 @@ namespace RipeGrain
 		CoreEngine& sprite_engine;
 		SceneLoader& scene_loader;
 	private:
+		DirectX::XMVECTOR base_position;
+	private:
 		std::list<std::unique_ptr<SceneObject>> objects;
 	public:
 		using SceneObjectRef = std::list<std::unique_ptr<SceneObject>>::iterator;
 	public:
-		Scene(CoreEngine& engine , SceneLoader& scene_loader) : sprite_engine(engine) , scene_loader(scene_loader) {}
+		Scene(CoreEngine& engine , SceneLoader& scene_loader) : sprite_engine(engine) , scene_loader(scene_loader) , base_position(DirectX::XMVectorZero()) {}
 		virtual ~Scene() = default;
 	public:
 		template<CSceneObject SceneObjectT>
@@ -57,6 +59,14 @@ namespace RipeGrain
 		inline void RegisterEvent(std::unique_ptr<Event> ev)
 		{
 			scene_loader.RegisterEvent(std::move(ev));
+		}
+		inline void SetBasePosition(int x, int y)
+		{
+			base_position = DirectX::XMVectorSet(x, y, 0, 1);
+		}
+		inline void SetBasePosition(DirectX::XMVECTOR pos)
+		{
+			base_position = pos;
 		}
 	protected:
 		template<typename T , typename... ParamsT>
@@ -70,11 +80,15 @@ namespace RipeGrain
 			for (auto& object : objects)
 				object->Update();
 		}
+		virtual void Initialize()
+		{}
 		virtual void OnEventReceive(Event& ev)
-		{
-
-		}
+		{}
 	public:
+		const DirectX::XMVECTOR& GetBasePosition() const
+		{
+			return base_position;
+		}
 		std::list<std::unique_ptr<SceneObject>>& GetObjectList()
 		{
 			return objects;
@@ -101,8 +115,9 @@ namespace RipeGrain
 		void onSceneLoad(Scene& scene)
 		{
 			current_scene = &scene;
-			auto scene_event = std::make_unique<EventObject<EventSceneLoaded>>(CreateEventObject(EventSceneLoaded{&scene.GetObjectList()}));
+			auto scene_event = std::make_unique<EventObject<EventSceneLoaded>>(CreateEventObject(EventSceneLoaded{&scene.GetBasePosition() , &scene.GetObjectList()}));
 			RaiseEvent(std::move(scene_event));
+			scene.Initialize();
 		}
 	public:
 		void OnUpdate() override

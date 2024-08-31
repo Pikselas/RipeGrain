@@ -18,6 +18,7 @@ namespace RipeGrain
 
 	struct EventSceneLoaded
 	{
+		const DirectX::XMVECTOR* scene_position;
 		std::list<std::unique_ptr<SceneObject>>* objects;
 	};
 
