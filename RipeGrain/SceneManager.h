@@ -44,17 +44,16 @@ namespace RipeGrain
 	private:
 		DirectX::XMVECTOR base_position;
 	private:
-		std::list<std::unique_ptr<SceneObject>> objects;
+		std::list<SceneObject*> objects;
 	public:
 		using SceneObjectRef = std::list<std::unique_ptr<SceneObject>>::iterator;
 	public:
 		Scene(CoreEngine& engine , SceneLoader& scene_loader) : sprite_engine(engine) , scene_loader(scene_loader) , base_position(DirectX::XMVectorZero()) {}
 		virtual ~Scene() = default;
 	public:
-		template<CSceneObject SceneObjectT>
-		SceneObjectT* AddObject()
+		void AddObject(SceneObject* obj)
 		{
-			return dynamic_cast<SceneObjectT*>(objects.emplace_back(std::make_unique<SceneObjectT>(sprite_engine)).get());
+			objects.emplace_back(obj);
 		}
 		inline void RegisterEvent(std::unique_ptr<Event> ev)
 		{
@@ -74,6 +73,27 @@ namespace RipeGrain
 		{
 			scene_loader.LoadScene<T>(params...);
 		}
+	protected:
+		Texture CreateTextutre(const Image& img)
+		{
+			return sprite_engine.CreateTexture(img);
+		}
+		ImageSprite CreateSprite(const Image& img)
+		{
+			return sprite_engine.CreateSprite(img);
+		}
+		ImageSprite CreateSprite(Texture texture)
+		{
+			return sprite_engine.CreateSprite(texture, texture.GetWidth(), texture.GetWidth());
+		}
+		ImageSprite CreateSprite(Texture texture , unsigned int width , unsigned int height)
+		{
+			return sprite_engine.CreateSprite(texture, width , height);
+		}
+		ImageSprite CreateSprite(const Image& img , unsigned int width , unsigned int height)
+		{
+			return sprite_engine.CreateSprite(CreateTextutre(img) , width , height);
+		}
 	public:
 		virtual void Update() 
 		{
@@ -89,7 +109,7 @@ namespace RipeGrain
 		{
 			return base_position;
 		}
-		std::list<std::unique_ptr<SceneObject>>& GetObjectList()
+		std::list<SceneObject*>& GetObjectList()
 		{
 			return objects;
 		}

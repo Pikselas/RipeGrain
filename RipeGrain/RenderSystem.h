@@ -14,7 +14,7 @@ namespace RipeGrain
 		WindowRenderer window_render_surface;
 	private:
 		const DirectX::XMVECTOR* base_position = nullptr;
-		const std::list<std::unique_ptr<SceneObject>>* objects = nullptr;
+		const std::list<SceneObject*>* objects = nullptr;
 	public:
 		RenderSystem(CoreEngine& renderer ,CustomWindow& window): renderer(renderer), window_render_surface(renderer.CreateRenderer(window))
 		{

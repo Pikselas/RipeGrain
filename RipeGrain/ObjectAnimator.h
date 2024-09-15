@@ -30,7 +30,6 @@ namespace RipeGrain
 			}
 
 			float elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - *last_frame_time).count();
-			OutputDebugString((std::to_string(elapsed) + "\n").c_str());
 			if (elapsed >= per_frame_duration)
 			{
 				auto diff = std::clamp(elapsed - per_frame_duration ,0.f , 1.f);

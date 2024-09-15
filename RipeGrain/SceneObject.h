@@ -5,33 +5,13 @@ namespace RipeGrain
 {
 	class SceneObject
 	{
-	private:
-		CoreEngine& sprite_engine;
 	protected:
 		DirectX::XMVECTOR position;
 	protected:
 		std::vector<ImageSprite> sprites;
 	public:
-		SceneObject(CoreEngine& sprite_engine) : sprite_engine(sprite_engine) , position(DirectX::XMVectorZero()){}
+		SceneObject() : position(DirectX::XMVectorZero()){}
 		virtual ~SceneObject() = default;
-	public:
-		inline ImageSprite CreateSprite(const Image& img)
-		{
-			return sprite_engine.CreateSprite(img);
-		}
-		inline ImageSprite CreateSprite(Texture texture)
-		{
-			return sprite_engine.CreateSprite(texture, texture.GetWidth(), texture.GetHeight());
-		}
-		inline ImageSprite CreateSprite(Texture texture, unsigned int width, unsigned int height)
-		{
-			return sprite_engine.CreateSprite(texture, width, height);
-		}
-	public:
-		inline Texture CreateTexture(const Image& img)
-		{
-			return sprite_engine.CreateTexture(img);
-		}
 	public:
 		inline void AddSprite(ImageSprite sprite)
 		{
