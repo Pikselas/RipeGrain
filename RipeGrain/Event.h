@@ -13,13 +13,13 @@ namespace RipeGrain
 
 	struct EventCollisionDetected
 	{
-		std::vector<std::pair<BoxCollider, BoxCollider>> collision_list;
+		std::vector<std::pair<BoxCollider, std::vector<BoxCollider>>> collision_list;
 	};
 
 	struct EventSceneLoaded
 	{
 		const DirectX::XMVECTOR* scene_position;
-		std::list<std::unique_ptr<SceneObject>>* objects;
+		std::list<SceneObject*>* objects;
 	};
 
 	struct EventMouseInput

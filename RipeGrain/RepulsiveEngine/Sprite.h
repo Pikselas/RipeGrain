@@ -4,7 +4,7 @@
 class Sprite
 {
 private:
-	DirectX::XMVECTOR position = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f , 1.0f);
+	DirectX::XMVECTOR position = DirectX::XMVectorZero();
 	DirectX::XMMATRIX transformation = DirectX::XMMatrixIdentity();
 public:
 	virtual void Draw(RenderCommandEngine& engine) const = 0;
