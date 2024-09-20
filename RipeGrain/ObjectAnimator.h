@@ -13,9 +13,30 @@ namespace RipeGrain
 	private:
 		unsigned int current_frame_index = 0;
 	private:
+		bool in_reverse = false;
+		bool reverse_alternate = false;
+	private:
 		std::optional<std::chrono::steady_clock::time_point> last_frame_time;
 	public:
-		ObjectAnimator(unsigned int frame_count , float duration) : per_frame_duration(duration /(float)frame_count) , total_frame_count(frame_count) {}
+		ObjectAnimator() = default;
+		ObjectAnimator(unsigned int frame_count , float duration, bool reverse_alternate) : per_frame_duration(duration /(float)frame_count) , total_frame_count(frame_count), reverse_alternate(reverse_alternate) {}
+	public:
+		void SetFrameCount(unsigned int frame_count)
+		{
+			total_frame_count = frame_count;
+		}
+		void SetDuration(float duration)
+		{
+			per_frame_duration = duration / (float)total_frame_count;
+		}
+		void EnableReversePlay()
+		{
+			reverse_alternate = true;
+		}
+		void DisableReversePlay()
+		{
+			reverse_alternate = false;
+		}
 	protected:
 		virtual void SetObjectFrame(ImageSprite& sprite , unsigned int frame_index) = 0;
 	public:
@@ -33,11 +54,12 @@ namespace RipeGrain
 			if (elapsed >= per_frame_duration)
 			{
 				auto diff = std::clamp(elapsed - per_frame_duration ,0.f , 1.f);
-				current_frame_index += (1 + diff);
-				if (current_frame_index >= total_frame_count)
+				current_frame_index += reverse_alternate && in_reverse ? -(1) : (1);
+				if (current_frame_index >= total_frame_count || current_frame_index < 0)
 				{
-					SetObjectFrame(sprite , current_frame_index = 0);
+					SetObjectFrame(sprite, current_frame_index = reverse_alternate && !in_reverse? total_frame_count - 1 : 0);
 					last_frame_time = std::nullopt;
+					in_reverse = !in_reverse;
 					return;
 				}
 				SetObjectFrame( sprite, current_frame_index);
@@ -63,7 +85,7 @@ namespace RipeGrain
 	public:
 		SpriteSheetAnimator(std::vector<std::pair<unsigned int, unsigned int>> sheet_offsets , float duration_ms) 
 			:
-		 ObjectAnimator(sheet_offsets.size() , duration_ms) , sheet_offsets(sheet_offsets)
+		 ObjectAnimator(sheet_offsets.size() , duration_ms, false) , sheet_offsets(sheet_offsets)
 		{}
 	protected:
 		void SetObjectFrame(ImageSprite& sprite , unsigned int frame_index) override
@@ -78,9 +100,9 @@ namespace RipeGrain
 	private:
 		std::vector<Texture> textures;
 	public:
-		TextureBatchAnimator(std::vector<Texture> textures, float duration_ms)
+		TextureBatchAnimator(std::vector<Texture> textures, float duration_ms, bool reverse_alternate = false)
 			:
-			ObjectAnimator(textures.size() , duration_ms) , textures(textures)
+			ObjectAnimator(textures.size() , duration_ms , reverse_alternate) , textures(textures)
 		{}
 	protected:
 		void SetObjectFrame(ImageSprite& sprite , unsigned int frame_index) override
@@ -98,7 +120,7 @@ namespace RipeGrain
 	public:
 		PositionAnimator(int start_x, int end_x, float duration_ms) 
 			:
-		 ObjectAnimator(std::abs(end_x - start_x) , duration_ms) , start_x(start_x) , end_x(end_x)
+		 ObjectAnimator(std::abs(end_x - start_x) , duration_ms , false) , start_x(start_x) , end_x(end_x)
 		{
 			velocity = start_x < end_x ? 1 : -1;
 		}

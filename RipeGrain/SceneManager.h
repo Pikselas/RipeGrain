@@ -15,7 +15,7 @@ namespace RipeGrain
 	class SceneLoader
 	{
 	public:
-		std::function<void(Scene&)> OnSceneLoaded;
+		std::function<void(Scene& , CoreEngine& engine)> OnSceneLoaded;
 		std::function<void(std::unique_ptr<Event>)> SceneEventRaiser;
 	private:
 		CoreEngine& sprite_engine;
@@ -26,9 +26,9 @@ namespace RipeGrain
 		template<typename T, typename... ParamsT>
 		void LoadScene(ParamsT&& ... params)
 		{
-			current_scene = std::make_unique<T>(sprite_engine, *this, params...);
+			current_scene = std::make_unique<T>(params...);
 			if (OnSceneLoaded)
-				OnSceneLoaded(*current_scene);
+				OnSceneLoaded(*current_scene , sprite_engine);
 		}
 		void RegisterEvent(std::unique_ptr<Event> ev)
 		{
@@ -39,8 +39,8 @@ namespace RipeGrain
 	class Scene
 	{
 	private:
-		CoreEngine& sprite_engine;
-		SceneLoader& scene_loader;
+		CoreEngine* sprite_engine = nullptr;
+		SceneLoader* scene_loader = nullptr;
 	private:
 		DirectX::XMVECTOR base_position;
 	private:
@@ -48,8 +48,14 @@ namespace RipeGrain
 	public:
 		using SceneObjectRef = std::list<std::unique_ptr<SceneObject>>::iterator;
 	public:
-		Scene(CoreEngine& engine , SceneLoader& scene_loader) : sprite_engine(engine) , scene_loader(scene_loader) , base_position(DirectX::XMVectorZero()) {}
+		Scene() : base_position(DirectX::XMVectorZero()) {}
 		virtual ~Scene() = default;
+	public:
+		void ApplySceneArguments(CoreEngine& engine, SceneLoader& loader)
+		{
+			sprite_engine = &engine;
+			scene_loader = &loader;
+		}
 	public:
 		void AddObject(SceneObject* obj)
 		{
@@ -57,7 +63,7 @@ namespace RipeGrain
 		}
 		inline void RegisterEvent(std::unique_ptr<Event> ev)
 		{
-			scene_loader.RegisterEvent(std::move(ev));
+			scene_loader->RegisterEvent(std::move(ev));
 		}
 		inline void SetBasePosition(int x, int y)
 		{
@@ -71,28 +77,28 @@ namespace RipeGrain
 		template<typename T , typename... ParamsT>
 		void LoadScene(ParamsT&& ... params)
 		{
-			scene_loader.LoadScene<T>(params...);
+			scene_loader->LoadScene<T>(params...);
 		}
 	protected:
-		Texture CreateTextutre(const Image& img)
+		Texture CreateTexture(const Image& img)
 		{
-			return sprite_engine.CreateTexture(img);
+			return sprite_engine->CreateTexture(img);
 		}
 		ImageSprite CreateSprite(const Image& img)
 		{
-			return sprite_engine.CreateSprite(img);
+			return sprite_engine->CreateSprite(img);
 		}
 		ImageSprite CreateSprite(Texture texture)
 		{
-			return sprite_engine.CreateSprite(texture, texture.GetWidth(), texture.GetWidth());
+			return sprite_engine->CreateSprite(texture, texture.GetWidth(), texture.GetWidth());
 		}
 		ImageSprite CreateSprite(Texture texture , unsigned int width , unsigned int height)
 		{
-			return sprite_engine.CreateSprite(texture, width , height);
+			return sprite_engine->CreateSprite(texture, width , height);
 		}
 		ImageSprite CreateSprite(const Image& img , unsigned int width , unsigned int height)
 		{
-			return sprite_engine.CreateSprite(CreateTextutre(img) , width , height);
+			return sprite_engine->CreateSprite(CreateTexture(img) , width , height);
 		}
 	public:
 		virtual void Update() 
@@ -101,7 +107,9 @@ namespace RipeGrain
 				object->Update();
 		}
 		virtual void Initialize()
-		{}
+		{
+
+		}
 		virtual void OnEventReceive(Event& ev)
 		{}
 	public:
@@ -122,8 +130,9 @@ namespace RipeGrain
 	public:
 		SceneManager(SceneLoader& scene_loader)
 		{
-			scene_loader.OnSceneLoaded = [this](Scene& scene)
+			scene_loader.OnSceneLoaded = [&,this](Scene& scene , CoreEngine& engine)
 				{
+					scene.ApplySceneArguments(engine, scene_loader);
 					onSceneLoad(scene);
 				};
 			scene_loader.SceneEventRaiser = [this](std::unique_ptr<Event> ev)
@@ -137,6 +146,7 @@ namespace RipeGrain
 			current_scene = &scene;
 			auto scene_event = std::make_unique<EventObject<EventSceneLoaded>>(CreateEventObject(EventSceneLoaded{&scene.GetBasePosition() , &scene.GetObjectList()}));
 			RaiseEvent(std::move(scene_event));
+
 			scene.Initialize();
 		}
 	public:
