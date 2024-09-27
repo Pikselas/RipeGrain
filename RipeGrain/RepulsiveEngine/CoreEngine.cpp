@@ -88,6 +88,15 @@ CoreEngine::CoreEngine()
 	graphics_device->CreateBuffer(&ibd, &isubd, &index_buffer);
 	device_context->IASetIndexBuffer(index_buffer.Get(), DXGI_FORMAT_R32_UINT, 0u);
 
+	D3D11_RASTERIZER_DESC rasterDesc = {};
+	
+	rasterDesc.FillMode = D3D11_FILL_SOLID;
+	rasterDesc.CullMode = D3D11_CULL_NONE; // Disable culling
+	rasterDesc.FrontCounterClockwise = false;
+	rasterDesc.DepthClipEnable = true;
+
+	graphics_device->CreateRasterizerState(&rasterDesc, &raster_state);
+	device_context->RSSetState(raster_state.Get());
 }
 
 void CoreEngine::SetComponent(const DirectX::XMMATRIX transformation)

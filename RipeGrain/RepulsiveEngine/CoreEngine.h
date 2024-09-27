@@ -35,6 +35,7 @@ public:
 	CoreEngine();
 private:
 	ObjectManager<ID3D11SamplerState>		SAMPLER_STATE;
+	ObjectManager<ID3D11RasterizerState>	raster_state;
 public:
 	void SetComponent(const DirectX::XMMATRIX transformation) override;
 	void SetComponent(ID3D11ShaderResourceView* texture_view, std::pair<float, float> coord, std::pair<float, float> size) override;
