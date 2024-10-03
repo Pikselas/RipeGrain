@@ -10,20 +10,21 @@ namespace RipeGrain
 	{
 	private:
 		CoreEngine& renderer;
+		CustomWindow& render_window;
 	private:
-		WindowRenderer window_render_surface;
+		std::unique_ptr<WindowRenderer> window_render_surface;
 	private:
 		const DirectX::XMVECTOR* base_position = nullptr;
-		const std::list<SceneObject*>* objects = nullptr;
+		const std::vector<SceneObject*>* objects = nullptr;
 	public:
-		RenderSystem(CoreEngine& renderer ,CustomWindow& window): renderer(renderer), window_render_surface(renderer.CreateRenderer(window))
+		RenderSystem(CoreEngine& renderer ,CustomWindow& window): renderer(renderer),render_window(window), window_render_surface(std::make_unique<WindowRenderer>(renderer.CreateRenderer(window)))
 		{
-			renderer.SetRenderDevice(window_render_surface);
+			renderer.SetRenderDevice(*window_render_surface);
 		}
 	public:	
 		void OnUpdate() override
 		{
-			renderer.ClearFrame(window_render_surface);
+			renderer.ClearFrame(*window_render_surface);
 			if (objects)
 			{
 				for (auto& object : *objects)
@@ -36,7 +37,7 @@ namespace RipeGrain
 					}
 				}
 			}
-			window_render_surface.RenderFrame();
+			window_render_surface->RenderFrame();
 		}
 
 		void OnEventReceive(Event& event_data) override
@@ -46,6 +47,13 @@ namespace RipeGrain
 				auto data = GetEventData<EventSceneLoaded>(event_data);
 				objects = data.objects;
 				base_position = data.scene_position;
+			}
+			else if (event_data.event_type_index == typeid(EventResizeScreen))
+			{
+				auto [w,h] = GetEventData<EventResizeScreen>(event_data);
+				render_window.ResizeWindow(w, h);
+				window_render_surface = std::make_unique<WindowRenderer>(renderer.CreateRenderer(render_window));
+				renderer.SetRenderDevice(*window_render_surface);
 			}
 		}
 	};

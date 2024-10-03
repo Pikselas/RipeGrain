@@ -61,6 +61,13 @@ void Window::SetFocus() const
 	SetForegroundWindow(window_handle);
 }
 
+void Window::ResizeWindow(unsigned int width, unsigned int height)
+{
+	SetWindowPos(window_handle, NULL, 100, 100, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
+	this->width = width;
+	this->height = height;
+}
+
 void Window::ProcessEvents(EventDispatcher e) const
 {
 	e(window_handle);

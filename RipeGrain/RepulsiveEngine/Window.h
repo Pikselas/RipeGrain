@@ -39,6 +39,8 @@ class Window
 		void ChangeTitle(const std::string& title) const;
 		void SetFocus() const;
 	public:
+		void ResizeWindow(unsigned int width, unsigned int height);
+	public:
 		using EventDispatcher = void (&)(const HWND);
 		void ProcessEvents(EventDispatcher e = DispatchWindowEvents) const;
 	public:
