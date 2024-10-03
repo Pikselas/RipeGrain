@@ -4,7 +4,6 @@
 #include <type_traits>
 #include "EngineComponent.h"
 
-
 namespace RipeGrain
 {
 	template<typename T>
@@ -45,8 +44,14 @@ namespace RipeGrain
 		{
 			while (!event_queue.empty())
 			{
-				for (auto& compoenent : event_subscribers)
-					compoenent->OnEventReceive(*event_queue.front());
+				for (auto& component : event_subscribers)
+				{
+					auto& ev = *event_queue.front();
+					if (dynamic_cast<EngineEventSubscriber*>(ev.sender) != component)
+					{
+						component->OnEventReceive(ev);
+					}
+				}
 				event_queue.pop();
 			}
 

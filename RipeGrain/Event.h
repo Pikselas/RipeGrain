@@ -5,6 +5,11 @@
 #include "BoxCollider.h"
 namespace RipeGrain
 {
+	struct EventResizeScreen
+	{
+		unsigned int width;
+		unsigned int height;
+	};
 
 	struct EventCollidersAdded
 	{
@@ -13,13 +18,13 @@ namespace RipeGrain
 
 	struct EventCollisionDetected
 	{
-		std::vector<std::pair<BoxCollider, std::vector<BoxCollider>>> collision_list;
+		std::vector<std::pair<BoxCollider, std::vector<BoxCollider>>>& collision_list;
 	};
 
 	struct EventSceneLoaded
 	{
 		const DirectX::XMVECTOR* scene_position;
-		std::list<SceneObject*>* objects;
+		const std::vector<SceneObject*>* objects;
 	};
 
 	struct EventMouseInput
@@ -56,6 +61,7 @@ namespace RipeGrain
 	public:
 		Type event_type = Type::CustomEvent;
 		std::type_index event_type_index;
+		class EngineComponent* sender = nullptr;
 	public:
 		Event(std::type_index type) : event_type_index(type){}
 	};

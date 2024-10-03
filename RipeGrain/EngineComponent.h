@@ -19,6 +19,7 @@ namespace RipeGrain
 	protected:
 		void RaiseEvent(std::unique_ptr<Event> ev)
 		{
+			ev->sender = this;
 			event_queue->push(std::move(ev));
 		}
 	public:
