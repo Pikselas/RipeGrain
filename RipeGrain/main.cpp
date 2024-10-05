@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "AudioSystem.h"
 #include "InputSystem.h"
 #include "RenderSystem.h"
 #include "PhysicsSystem.h"
@@ -15,13 +16,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	
 	window.keyboard.EnableKeyRepeat();
 
+	engine.ConfigureWith<RipeGrain::AudioSystem>();
 	engine.ConfigureWith<RipeGrain::PhysicsSystem>();
 	engine.ConfigureWith<RipeGrain::InputSystem>(window.mouse);
 	engine.ConfigureWith<RipeGrain::SceneManager>(scene_loader);
 	engine.ConfigureWith<RipeGrain::InputSystem>(window.keyboard);
 	engine.ConfigureWith<RipeGrain::RenderSystem>(render_engine , window);
-
-
+	
 	scene_loader.LoadScene<MainScene>();
 	
 	while (window.IsOpen())

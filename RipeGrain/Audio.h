@@ -4,8 +4,6 @@
 #include <memory>
 #include <filesystem>
 
-#include "AudioSystem.h"
-
 #define fourccRIFF 'FFIR'
 #define fourccDATA 'atad'
 #define fourccFMT ' tmf'
@@ -15,18 +13,14 @@
 
 namespace RipeGrain
 {
-    class Audio : private IXAudio2VoiceCallback
+    class Audio
     {
-    private:
-        bool isStopped = true;
     private:
         std::unique_ptr<BYTE[]> audio_data;
         XAUDIO2_BUFFER buffer = { 0 };
         WAVEFORMATEXTENSIBLE wfx = { 0 };
-    private:
-        IXAudio2SourceVoice* voice = nullptr;
     public:
-        Audio(std::filesystem::path path, AudioSystem& system)
+        Audio(std::filesystem::path path)
         {
             HANDLE hFile = CreateFile(
                 path.string().c_str(),
@@ -63,15 +57,7 @@ namespace RipeGrain
             buffer.pAudioData = audio_data.get();  //buffer containing audio data
             buffer.Flags = XAUDIO2_END_OF_STREAM; // tell the source voice not to expect any data after this buffer
 
-            system.engine->CreateSourceVoice(&voice, getFormat(), 0, XAUDIO2_DEFAULT_FREQ_RATIO, this, NULL, NULL);
-        }
-        ~Audio()
-        {
-            if (voice != nullptr)
-            {
-                voice->Stop();
-                voice->DestroyVoice();
-            }
+            //system.engine->CreateSourceVoice(&voice, getFormat(), 0, XAUDIO2_DEFAULT_FREQ_RATIO, this, NULL, NULL);
         }
     public:
         XAUDIO2_BUFFER* getBuffer()
@@ -146,6 +132,43 @@ namespace RipeGrain
                 hr = HRESULT_FROM_WIN32(GetLastError());
             return hr;
         }
+    public:
+        void SetLoop(int loop_count = XAUDIO2_LOOP_INFINITE)
+        {
+            buffer.LoopBegin = 0;
+            buffer.LoopLength = 0;
+            buffer.LoopCount = loop_count;
+        }
+    };
+
+    class PlayBackHandle : private IXAudio2VoiceCallback
+    {
+        friend class AudioSystem;
+    private:
+        bool isStopped = true;
+    private:
+        IXAudio2SourceVoice* voice = nullptr;
+    public:
+        PlayBackHandle(const PlayBackHandle&) = delete;
+        PlayBackHandle& operator= (const PlayBackHandle&) = delete;
+        PlayBackHandle(PlayBackHandle&& other) noexcept
+        {
+            *this = std::move(other);
+        }
+        PlayBackHandle& operator= (PlayBackHandle&& other) noexcept
+        {
+            isStopped = other.isStopped;
+            voice = other.voice;
+
+            isStopped = true;
+            voice = nullptr;
+        }
+    public:
+        PlayBackHandle() = default;
+        ~PlayBackHandle()
+        {
+            Destroy();
+        }
     private:
         void OnStreamEnd() override
         {
@@ -158,30 +181,57 @@ namespace RipeGrain
         void OnLoopEnd(void* pBufferContext) override {}
         void OnVoiceError(void* pBufferContext, HRESULT Error) override {}
     public:
-        void Play()
-        {
-            voice->SubmitSourceBuffer(getBuffer());
-            voice->Start(0);
-            isStopped = false;
-        }
         void Stop()
         {
             isStopped = true;
             voice->Stop();
         }
-        void SetLoop(int loop_count = XAUDIO2_LOOP_INFINITE)
+        void Play(Audio& audio)
         {
-            buffer.LoopBegin = 0;
-            buffer.LoopLength = 0;
-            buffer.LoopCount = loop_count;
+            isStopped = false;
+            //voice->FlushSourceBuffers();
+            voice->SubmitSourceBuffer(audio.getBuffer());
+            voice->Start();
         }
-        void SetSpeed(float speed)
+        void SetSpeed(float freq)
         {
-            voice->SetFrequencyRatio(speed);
+            voice->SetFrequencyRatio(freq);
         }
+    public:
         bool IsStopped() const
         {
             return isStopped;
         }
+        bool HasActiveVoice() const
+        {
+            return voice != nullptr;
+        }
+        void Destroy()
+        {
+            if (voice)
+            {
+                voice->Stop();
+                voice->DestroyVoice();
+                voice = nullptr;
+            }
+        }
     };
+
+    struct EventPlayAudio
+    {
+        Audio& audio;
+        bool PLAY_IMMEDIATE = true;
+        PlayBackHandle* handle = nullptr;
+        float PLAYBACK_SPEED = 1.0f;
+    };
+
+    std::unique_ptr<Event> CreatePlayBackEvent(EventPlayAudio event)
+    {
+        return std::make_unique<EventObject<EventPlayAudio>>(CreateEventObject<EventPlayAudio>(event));
+    }
+
+    std::unique_ptr<Event> CreatePlayBackEvent(Audio& audio ,bool play_immediate = true , PlayBackHandle* handle = nullptr , float speed = 1.0f)
+    {
+        return CreatePlayBackEvent(EventPlayAudio{audio, play_immediate , handle , speed});
+    }
 }
