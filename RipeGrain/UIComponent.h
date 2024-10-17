@@ -10,23 +10,31 @@ namespace RipeGrain
 	private:
 		std::string id;
 		ImageSprite ui_sprite;
+	public:
+		std::function<void(EventMouseInput)> on_mouse = nullptr;
 	private:
 		std::vector<UIComponent> children;
 	public:
+		bool IsInRange(int x_pos, int y_pos)
+		{
+			int ui_x = GetX();
+			int ui_y = GetY();
+
+			int width = ui_sprite.GetWidth();
+			int height = ui_sprite.GetHeight();
+
+			return (x_pos >= ui_x && x_pos <= ui_x + width && y_pos >= ui_y && y_pos <= ui_y + height);
+		}
 		void OnEvent(EventMouseInput evnt)
 		{
+			if(on_mouse)
+				on_mouse(evnt);
 			for (auto& child : children)
 			{
-				int ui_x = child.GetX();
-				int ui_y = child.GetY();
-
-				int width = child.ui_sprite.GetWidth();
-				int height = child.ui_sprite.GetHeight();
-
-				if (evnt.x_pos >= ui_x && evnt.x_pos <= ui_x + width && evnt.y_pos >= ui_y && evnt.y_pos <= ui_y + height)
+				if (child.IsInRange(evnt.x_pos , evnt.y_pos))
 				{
-					evnt.x_pos = ui_x - evnt.x_pos;
-					evnt.y_pos = ui_y - evnt.y_pos;
+					evnt.x_pos = evnt.x_pos - child.GetX();
+					evnt.y_pos = evnt.y_pos - child.GetY();
 					child.OnEvent(evnt);
 				}
 			}
@@ -66,7 +74,8 @@ namespace RipeGrain
 		}
 		void SetPosition(int x, int y)
 		{
-			ui_sprite.SetPosition(DirectX::XMVectorSet(x, y, 1, 1));
+			SetX(x);
+			SetY(y);
 		}
 	public:
 		void SetTexture(Texture tex)

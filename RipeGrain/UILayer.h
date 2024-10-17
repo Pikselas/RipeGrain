@@ -14,6 +14,11 @@ namespace RipeGrain
 			components.emplace_back(component);
 		}
 	public:
+		std::vector<UIComponent>& getComponents()
+		{
+			return components;
+		}
+	public:
 		void Render(CoreEngine& engine) const override
 		{
 			for (const auto& ui_component : components)
@@ -22,4 +27,14 @@ namespace RipeGrain
 			}
 		}
 	};
+
+	struct EventRegisterUI
+	{
+		UILayer* layer = nullptr;
+	};
+
+	std::unique_ptr<Event> CreateUIEV(UILayer* layer)
+	{
+		return std::make_unique<EventObject<EventRegisterUI>>(CreateEventObject<EventRegisterUI>(EventRegisterUI{ layer }));
+	}
 }
