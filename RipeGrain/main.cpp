@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "UISystem.h"
 #include "AudioSystem.h"
 #include "InputSystem.h"
 #include "RenderSystem.h"
@@ -16,6 +17,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	
 	window.keyboard.EnableKeyRepeat();
 
+	engine.ConfigureWith<RipeGrain::UISystem>();
 	engine.ConfigureWith<RipeGrain::AudioSystem>();
 	engine.ConfigureWith<RipeGrain::PhysicsSystem>();
 	engine.ConfigureWith<RipeGrain::InputSystem>(window.mouse);

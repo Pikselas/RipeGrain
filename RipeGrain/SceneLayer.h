@@ -6,6 +6,33 @@ namespace RipeGrain
 	{
 	protected:
 		DirectX::XMVECTOR base_position = DirectX::XMVectorZero();
+	public:
+		inline void SetBasePosition(int x, int y)
+		{
+			base_position = DirectX::XMVectorSet(x, y, 0, 1);
+		}
+		inline void SetBasePosition(DirectX::XMVECTOR pos)
+		{
+			base_position = pos;
+		}
+		inline const DirectX::XMVECTOR& GetBasePosition() const
+		{
+			return base_position;
+		}
+		inline void Scroll(DirectX::XMVECTOR dir, DirectX::XMVECTOR max_size)
+		{
+			auto pos = DirectX::XMVectorAdd(base_position, dir);
+			pos = DirectX::XMVectorClamp(pos, DirectX::XMVectorNegate(max_size), DirectX::XMVectorZero());
+			base_position = pos;
+		}
+	public:
+		virtual void Update() {};
+		virtual void Render(CoreEngine&) const {};
+	};
+
+	class SceneObjectsLayer final : public SceneLayer
+	{
+	protected:
 		std::vector<SceneObject*> objects;
 	public:
 		void AddObject(SceneObject* obj)
@@ -26,26 +53,8 @@ namespace RipeGrain
 		{
 			std::sort(objects.begin(), objects.end(), object_sort_predicator);
 		}
-		inline void SetBasePosition(int x, int y)
-		{
-			base_position = DirectX::XMVectorSet(x, y, 0, 1);
-		}
-		inline void SetBasePosition(DirectX::XMVECTOR pos)
-		{
-			base_position = pos;
-		}
-		inline const DirectX::XMVECTOR& GetBasePosition() const
-		{
-			return base_position;
-		}
-		inline void Scroll(DirectX::XMVECTOR dir, DirectX::XMVECTOR max_size)
-		{
-			auto pos = DirectX::XMVectorAdd(base_position, dir);
-			pos = DirectX::XMVectorClamp(pos, DirectX::XMVectorNegate(max_size), DirectX::XMVectorZero());
-			base_position = pos;
-		}
 	public:
-		virtual void Update()
+		virtual void Update() override
 		{
 			for (auto obj : objects)
 			{
@@ -53,7 +62,7 @@ namespace RipeGrain
 			}
 		}
 	public:
-		virtual void Render(CoreEngine& engine) const
+		void Render(CoreEngine& engine) const override
 		{
 			for (const auto& obj : objects)
 			{
