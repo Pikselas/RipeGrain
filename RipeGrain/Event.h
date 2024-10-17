@@ -3,6 +3,7 @@
 #include <optional>
 #include "SceneObject.h"
 #include "BoxCollider.h"
+
 namespace RipeGrain
 {
 	struct EventResizeScreen
@@ -23,8 +24,7 @@ namespace RipeGrain
 
 	struct EventSceneLoaded
 	{
-		const DirectX::XMVECTOR* scene_position;
-		const std::vector<SceneObject*>* objects;
+		class Scene* scene;
 	};
 
 	struct EventMouseInput
@@ -82,7 +82,7 @@ namespace RipeGrain
 	}
 
 	template<typename T> 
-	T GetEventData(Event& event_data)
+	T& GetEventData(Event& event_data)
 	{
 		return reinterpret_cast<EventObject<T>&>(event_data).data;
 	}

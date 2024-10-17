@@ -3,6 +3,8 @@
 #include "RepulsiveEngine/CustomWindow.h"
 
 #include "EngineComponent.h"
+#include "UIComponent.h"
+#include "SceneManager.h"
 
 namespace RipeGrain
 {
@@ -14,8 +16,9 @@ namespace RipeGrain
 	private:
 		std::unique_ptr<WindowRenderer> window_render_surface;
 	private:
-		const DirectX::XMVECTOR* base_position = nullptr;
-		const std::vector<SceneObject*>* objects = nullptr;
+		UIComponent main_ui_component;
+	private:
+		const Scene* scene = nullptr;
 	public:
 		RenderSystem(CoreEngine& renderer ,CustomWindow& window): renderer(renderer),render_window(window), window_render_surface(std::make_unique<WindowRenderer>(renderer.CreateRenderer(window)))
 		{
@@ -25,18 +28,11 @@ namespace RipeGrain
 		void OnUpdate() override
 		{
 			renderer.ClearFrame(*window_render_surface);
-			if (objects)
+			if (scene)
 			{
-				for (auto& object : *objects)
-				{
-					auto pos = object->GetPosition();
-					for (auto sprite : object->GetSprites())
-					{
-						sprite.SetPosition(DirectX::XMVectorAdd(DirectX::XMVectorAdd(sprite.GetPosition(), pos),*base_position));
-						sprite.Draw(renderer);
-					}
-				}
+				scene->Render(renderer);
 			}
+			main_ui_component.Render(renderer, 0, 0);
 			window_render_surface->RenderFrame();
 		}
 
@@ -44,9 +40,7 @@ namespace RipeGrain
 		{
 			if (event_data.event_type_index == typeid(EventSceneLoaded))
 			{
-				auto data = GetEventData<EventSceneLoaded>(event_data);
-				objects = data.objects;
-				base_position = data.scene_position;
+				scene = GetEventData<EventSceneLoaded>(event_data).scene;
 			}
 			else if (event_data.event_type_index == typeid(EventResizeScreen))
 			{
@@ -54,6 +48,10 @@ namespace RipeGrain
 				render_window.ResizeWindow(w, h);
 				window_render_surface = std::make_unique<WindowRenderer>(renderer.CreateRenderer(render_window));
 				renderer.SetRenderDevice(*window_render_surface);
+			}
+			else if (event_data.event_type_index == typeid(EventSetUIFrame))
+			{
+				main_ui_component = GetEventData<EventSetUIFrame>(event_data).component;
 			}
 		}
 	};

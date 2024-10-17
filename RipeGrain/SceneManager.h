@@ -1,5 +1,6 @@
 #pragma once
 #include <list>
+#include "SceneLayer.h"
 #include "SceneObject.h"
 #include "ObjectAnimator.h"
 #include "EngineComponent.h"
@@ -45,11 +46,8 @@ namespace RipeGrain
 		CoreEngine* sprite_engine = nullptr;
 		SceneLoader* scene_loader = nullptr;
 	private:
-		DirectX::XMVECTOR base_position;
-	private:
-		std::vector<SceneObject*> objects;
+		std::vector<SceneLayer*> layers;
 	public:
-		Scene() : base_position(DirectX::XMVectorZero()) {}
 		virtual ~Scene() = default;
 	public:
 		void ApplySceneArguments(CoreEngine& engine, SceneLoader& loader)
@@ -67,25 +65,17 @@ namespace RipeGrain
 			return view_port_height;
 		}
 	public:
-		void AddObject(SceneObject* obj)
+		void AddLayer(SceneLayer* layer)
 		{
-			objects.emplace_back(obj);
+			layers.emplace_back(layer);
 		}
-		void RemoveObject(SceneObject* obj)
+		void RemoveLayer(SceneLayer* layer)
 		{
-			objects.erase(std::find(objects.begin() , objects.end() , obj));
+			layers.erase(std::find(layers.begin() , layers.end() , layer));
 		}
 		inline void RegisterEvent(std::unique_ptr<Event> ev)
 		{
 			scene_loader->RegisterEvent(std::move(ev));
-		}
-		inline void SetBasePosition(int x, int y)
-		{
-			base_position = DirectX::XMVectorSet(x, y, 0, 1);
-		}
-		inline void SetBasePosition(DirectX::XMVECTOR pos)
-		{
-			base_position = pos;
 		}
 		inline void SetViewPortSize(unsigned int width, unsigned int height)
 		{
@@ -128,37 +118,25 @@ namespace RipeGrain
 	public:
 		virtual void Update() 
 		{
-			std::sort(objects.begin() , objects.end() , [](SceneObject* obj1, SceneObject* obj2) -> bool
-			{
-				return DirectX::XMVectorGetZ(obj1->GetPosition()) < DirectX::XMVectorGetZ(obj2->GetPosition());
-			});
-
-			for (auto& object : objects)
-				object->Update();
+			for (auto& layer : layers)
+				layer->Update();
 		}
 		virtual void Initialize()
 		{}
 		virtual void OnEventReceive(Event& ev)
 		{}
 	protected:
-		DirectX::XMVECTOR GetWindowEdgeDistance() const
+		DirectX::XMVECTOR GetWindowEdgeDistance(DirectX::XMVECTOR base_position) const
 		{
-			return DirectX::XMVectorSubtract(DirectX::XMVectorSet(view_port_width, view_port_height, 0, 1) , GetBasePosition());
-		}
-		void ScrollScene(DirectX::XMVECTOR dir, DirectX::XMVECTOR max_size)
-		{
-			auto pos = DirectX::XMVectorAdd(GetBasePosition(), dir);
-			pos = DirectX::XMVectorClamp(pos, DirectX::XMVectorNegate(max_size), DirectX::XMVectorZero());
-			SetBasePosition(pos);
+			return DirectX::XMVectorSubtract(DirectX::XMVectorSet(view_port_width, view_port_height, 0, 1) , base_position);
 		}
 	public:
-		const DirectX::XMVECTOR& GetBasePosition() const
+		void Render(CoreEngine& engine) const
 		{
-			return base_position;
-		}
-		const std::vector<SceneObject*>& GetObjectList() const
-		{
-			return objects;
+			for (const auto& layer : layers)
+			{
+				layer->Render(engine);
+			}
 		}
 	};
 
@@ -183,7 +161,7 @@ namespace RipeGrain
 		void onSceneLoad(Scene& scene)
 		{
 			current_scene = &scene;
-			auto scene_event = std::make_unique<EventObject<EventSceneLoaded>>(CreateEventObject(EventSceneLoaded{&scene.GetBasePosition() , &scene.GetObjectList()}));
+			auto scene_event = std::make_unique<EventObject<EventSceneLoaded>>(CreateEventObject(EventSceneLoaded{current_scene}));
 			RaiseEvent(std::move(scene_event));
 
 			scene.Initialize();
