@@ -97,6 +97,39 @@ CoreEngine::CoreEngine()
 
 	graphics_device->CreateRasterizerState(&rasterDesc, &raster_state);
 	device_context->RSSetState(raster_state.Get());
+
+	D3D11_DEPTH_STENCIL_DESC stencilDesc;
+	ZeroMemory(&stencilDesc, sizeof(stencilDesc));
+	stencilDesc.DepthEnable = FALSE;
+	stencilDesc.StencilEnable = TRUE;
+	stencilDesc.StencilReadMask = 0xFF;
+	stencilDesc.StencilWriteMask = 0xFF;
+
+	stencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	stencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	stencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
+	stencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	stencilDesc.BackFace = stencilDesc.FrontFace;
+
+	graphics_device->CreateDepthStencilState(&stencilDesc, &STENCIL_PASS_STATE);
+
+	D3D11_DEPTH_STENCIL_DESC maskedStencilDesc;
+	ZeroMemory(&maskedStencilDesc, sizeof(maskedStencilDesc));
+	maskedStencilDesc.DepthEnable = FALSE;
+	maskedStencilDesc.StencilEnable = TRUE;
+	maskedStencilDesc.StencilReadMask = 0xFF;
+	maskedStencilDesc.StencilWriteMask = 0xFF;
+
+	maskedStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	maskedStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	maskedStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	maskedStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL;
+	maskedStencilDesc.BackFace = maskedStencilDesc.FrontFace;
+
+	graphics_device->CreateDepthStencilState(&maskedStencilDesc, &STENCIL_CLIP_STATE);
+
+	// setting default pass state;
+	device_context->OMSetDepthStencilState(STENCIL_PASS_STATE.Get(), 1);
 }
 
 void CoreEngine::SetComponent(const DirectX::XMMATRIX transformation)
@@ -112,6 +145,43 @@ void CoreEngine::SetComponent(ID3D11Buffer* vertices)
 	constexpr unsigned int offset = 0u;
 	constexpr unsigned int stride = sizeof(VertexType);
 	device_context->IASetVertexBuffers(0u, 1u, &vertices, &stride , &offset);
+}
+
+void CoreEngine::SetStencilBuffer(StencilBuffer& buffer)
+{
+	ObjectManager<ID3D11RenderTargetView> existing_view;
+	ObjectManager<ID3D11DepthStencilView> stv;
+	device_context->OMGetRenderTargets(1, &existing_view, &stv);
+	device_context->OMSetRenderTargets(1, existing_view.GetAddressOf(), buffer.getView());
+}
+
+void CoreEngine::ClearStencilBuffer(StencilBuffer& buffer)
+{
+	device_context->ClearDepthStencilView(buffer.getView(), D3D11_CLEAR_STENCIL, 0, 0);
+}
+
+void CoreEngine::RemoveStencilBuffer()
+{
+	EndStencilClipping();
+	ObjectManager<ID3D11RenderTargetView> existing_view;
+	ObjectManager<ID3D11DepthStencilView> stv;
+	device_context->OMGetRenderTargets(1, &existing_view, &stv);
+	device_context->OMSetRenderTargets(1, existing_view.GetAddressOf(), nullptr);
+}
+
+void CoreEngine::EndStencilClipping()
+{
+	device_context->OMSetDepthStencilState(STENCIL_PASS_STATE.Get(), 1);
+}
+
+void CoreEngine::BeginStencilClipping()
+{
+	device_context->OMSetDepthStencilState(STENCIL_CLIP_STATE.Get(), 1);
+}
+
+StencilBuffer CoreEngine::CreateStencilBuffer(unsigned int width, unsigned int height)
+{
+	return StencilBuffer(graphics_device.Get(), width , height);
 }
 
 Texture CoreEngine::CreateTexture(const Image& image)

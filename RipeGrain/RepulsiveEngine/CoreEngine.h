@@ -4,6 +4,7 @@
 #pragma comment(lib,"D3DCompiler.lib")
 
 #include"CustomWindow.h"
+#include"StencilBuffer.h"
 #include"MemoryRenderer.h"
 #include"WindowRenderer.h"
 #include"AnimatedSprite.h"
@@ -36,10 +37,22 @@ public:
 private:
 	ObjectManager<ID3D11SamplerState>		SAMPLER_STATE;
 	ObjectManager<ID3D11RasterizerState>	raster_state;
+private:
+	ObjectManager<ID3D11DepthStencilState> STENCIL_PASS_STATE;
+	ObjectManager<ID3D11DepthStencilState> STENCIL_CLIP_STATE;
 public:
 	void SetComponent(const DirectX::XMMATRIX transformation) override;
 	void SetComponent(ID3D11ShaderResourceView* texture_view, std::pair<float, float> coord, std::pair<float, float> size) override;
 	void SetComponent(ID3D11Buffer* vertices) override;
+public:
+	void SetStencilBuffer(StencilBuffer& buffer);
+	void ClearStencilBuffer(StencilBuffer& buffer);
+public:
+	void EndStencilClipping();
+	void RemoveStencilBuffer();
+	void BeginStencilClipping();
+public:
+	StencilBuffer CreateStencilBuffer(unsigned int width, unsigned int height);
 public:
 	Texture CreateTexture(const Image& image);
 public:
