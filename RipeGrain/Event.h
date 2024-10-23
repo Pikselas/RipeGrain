@@ -32,12 +32,14 @@ namespace RipeGrain
 		enum class Type
 		{
 			Move,
+			Wheel,
 			LeftPress, 
 			RightPress,
 			LeftDoublePress,
 			RightDoublePress
 		};
 		Type type;
+		int delta;
 		int x_pos, y_pos;
 	};
 

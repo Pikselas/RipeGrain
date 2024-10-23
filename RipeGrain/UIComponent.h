@@ -19,6 +19,10 @@ namespace RipeGrain
 		friend class UILayer;
 	private:
 		ImageSprite ui_sprite;
+	private:
+		unsigned int max_page_size = 0;
+	private:
+		DirectX::XMVECTOR page_position = DirectX::XMVectorZero();
 	public:
 		using UIPtr = std::list<UIComponent>::iterator;
 	private:
@@ -44,6 +48,10 @@ namespace RipeGrain
 		{
 			if(on_mouse)
 				on_mouse(evnt);
+
+			evnt.x_pos -= DirectX::XMVectorGetX(page_position);
+			evnt.y_pos -= DirectX::XMVectorGetY(page_position);
+
 			for (auto& child : children)
 			{
 				if (child.IsInRange(evnt.x_pos , evnt.y_pos))
@@ -60,7 +68,7 @@ namespace RipeGrain
 		}
 	public:
 		UIComponent() = default;
-		UIComponent(ImageSprite ui_sprite) : ui_sprite(ui_sprite) {}
+		UIComponent(ImageSprite ui_sprite) : ui_sprite(ui_sprite) , max_page_size(ui_sprite.GetHeight()){}
 	private:
 		static UIComponent create_component(UIComponentDescription desc)
 		{
@@ -107,6 +115,7 @@ namespace RipeGrain
 	public:
 		UIPtr AddComponent(UIComponent component)
 		{
+			max_page_size = (std::max)(max_page_size, component.GetHeight() + component.GetY());
 			auto& child = children.emplace_back(std::move(component));
 			child.parent = self;
 			child.remove_self = remove_self;
@@ -115,6 +124,13 @@ namespace RipeGrain
 		UIPtr AddComponent(UIComponentDescription desc)
 		{
 			return AddComponent(create_component(desc));
+		}
+	public:
+		void ScrollBy(int y)
+		{
+			auto pos = DirectX::XMVectorAdd(page_position, DirectX::XMVectorSet(0, y, 0, 0));
+			auto min = DirectX::XMVectorSet(0, (int)ui_sprite.GetHeight() - (int)max_page_size, 0, 0);
+			page_position = DirectX::XMVectorClamp(pos , min , DirectX::XMVectorZero());
 		}
 	public:
 		void Remove()
@@ -135,10 +151,12 @@ namespace RipeGrain
 			pos = DirectX::XMVectorAdd(pos, DirectX::XMVectorSet(parent_x, parent_y, 1, 1));
 			sprite.SetPosition(pos);
 			sprite.Draw(engine);
+			auto child_pos = DirectX::XMVectorAdd(ui_sprite.GetPosition(), page_position);
+			child_pos = DirectX::XMVectorAdd(child_pos , DirectX::XMVectorSet(parent_x, parent_y, 1, 1));
 			for (const auto& child_ui : children)
 			{
 				engine.BeginStencilClipping(stencil_ref + 1);
-				child_ui.Render(engine, DirectX::XMVectorGetX(ui_sprite.GetPosition()), DirectX::XMVectorGetY(ui_sprite.GetPosition()),stencil_ref + 1);
+				child_ui.Render(engine, DirectX::XMVectorGetX(child_pos), DirectX::XMVectorGetY(child_pos),stencil_ref + 1);
 				engine.EndStencilClipping(stencil_ref + 1);
 			}
 		}

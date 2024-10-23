@@ -18,6 +18,7 @@ namespace RipeGrain
 				device.OnMove = [this](auto& wnd) { raiseInputEvent(ConstructEvent(wnd.mouse , EventMouseInput::Type::Move)); };
 				device.OnLeftPress = [this](auto& wnd) { raiseInputEvent(ConstructEvent(wnd.mouse, EventMouseInput::Type::LeftPress)); };
 				device.OnRightPress = [this](auto& wnd) { raiseInputEvent(ConstructEvent(wnd.mouse, EventMouseInput::Type::RightPress)); };
+				device.OnWheel = [this](auto& wnd) { raiseInputEvent(ConstructEvent(wnd.mouse, EventMouseInput::Type::Wheel)); };
 			}
 			else
 			{
@@ -33,6 +34,7 @@ namespace RipeGrain
 			ev.type = type;
 			ev.x_pos = mouse.GetX();
 			ev.y_pos = mouse.GetY();
+			ev.delta = mouse.GetWheelDelta();
 			return ev;
 		}
 
