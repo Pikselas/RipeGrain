@@ -1,19 +1,34 @@
 #pragma once
-#include <vector>
+#include <list>
 #include <functional>
 #include "Event.h"
 #include "RepulsiveEngine/ImageSprite.h"
+#include "RepulsiveEngine/StencilBuffer.h"
+
 namespace RipeGrain
 {
+	struct UIComponentDescription
+	{
+		int position_x;
+		int position_y;
+		ImageSprite ui_sprite;
+	};
+
 	class UIComponent
 	{
+		friend class UILayer;
 	private:
-		std::string id;
 		ImageSprite ui_sprite;
+	public:
+		using UIPtr = std::list<UIComponent>::iterator;
+	private:
+		UIPtr self;
+		std::optional<UIPtr> parent;
+		std::function<void(UIPtr)> remove_self;
 	public:
 		std::function<void(EventMouseInput)> on_mouse = nullptr;
 	private:
-		std::vector<UIComponent> children;
+		std::list<UIComponent> children;
 	public:
 		bool IsInRange(int x_pos, int y_pos)
 		{
@@ -46,6 +61,13 @@ namespace RipeGrain
 	public:
 		UIComponent() = default;
 		UIComponent(ImageSprite ui_sprite) : ui_sprite(ui_sprite) {}
+	private:
+		static UIComponent create_component(UIComponentDescription desc)
+		{
+			UIComponent comp(desc.ui_sprite);
+			comp.SetPosition(desc.position_x, desc.position_y);
+			return comp;
+		}
 	public:
 		unsigned int GetHeight() const
 		{
@@ -83,18 +105,27 @@ namespace RipeGrain
 			ui_sprite.SetTexture(tex);
 		}
 	public:
-		void AddComponent(UIComponent component)
+		UIPtr AddComponent(UIComponent component)
 		{
-			children.emplace_back(std::move(component));
+			auto& child = children.emplace_back(std::move(component));
+			child.parent = self;
+			child.remove_self = remove_self;
+			return child.self = std::prev(children.end());
 		}
-		void RemoveComponent(std::string component_id)
+		UIPtr AddComponent(UIComponentDescription desc)
 		{
-			std::remove_if(children.begin(), children.end(), [component_id](auto& component) 
-				{
-					return component.id == component_id;
-				});
+			return AddComponent(create_component(desc));
 		}
-		void Render(CoreEngine& engine, int parent_x, int parent_y) const
+	public:
+		void Remove()
+		{
+			remove_self(self);
+		}
+		void RemoveComponent(UIPtr child)
+		{
+			child->Remove();
+		}
+		void Render(CoreEngine& engine, int parent_x, int parent_y , unsigned int stencil_ref) const
 		{
 			auto sprite = ui_sprite;
 
@@ -102,23 +133,14 @@ namespace RipeGrain
 			auto pos = DirectX::XMVectorAdd(sprite.GetPosition(), half_size);
 
 			pos = DirectX::XMVectorAdd(pos, DirectX::XMVectorSet(parent_x, parent_y, 1, 1));
-
 			sprite.SetPosition(pos);
-
-			//pos = DirectX::XMVectorDivide(DirectX::XMVectorSet(parent->get().GetWidth(), parent->get().GetHeight(), 1, 1), DirectX::XMVectorSet(2, 2, 1, 1));
-			//pos = DirectX::XMVectorSubtract(ui_sprite.GetPosition(), pos);
-			//sprite.SetTransformation(DirectX::XMMatrixTranslationFromVector(pos));
-
 			sprite.Draw(engine);
 			for (const auto& child_ui : children)
 			{
-				child_ui.Render(engine, DirectX::XMVectorGetX(ui_sprite.GetPosition()), DirectX::XMVectorGetY(ui_sprite.GetPosition()));
+				engine.BeginStencilClipping(stencil_ref + 1);
+				child_ui.Render(engine, DirectX::XMVectorGetX(ui_sprite.GetPosition()), DirectX::XMVectorGetY(ui_sprite.GetPosition()),stencil_ref + 1);
+				engine.EndStencilClipping(stencil_ref + 1);
 			}
 		}
-	};
-
-	struct EventSetUIFrame
-	{
-		UIComponent component;
 	};
 }

@@ -122,7 +122,7 @@ CoreEngine::CoreEngine()
 
 	maskedStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
 	maskedStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	maskedStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	maskedStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
 	maskedStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL;
 	maskedStencilDesc.BackFace = maskedStencilDesc.FrontFace;
 
@@ -162,21 +162,20 @@ void CoreEngine::ClearStencilBuffer(StencilBuffer& buffer)
 
 void CoreEngine::RemoveStencilBuffer()
 {
-	EndStencilClipping();
 	ObjectManager<ID3D11RenderTargetView> existing_view;
 	ObjectManager<ID3D11DepthStencilView> stv;
 	device_context->OMGetRenderTargets(1, &existing_view, &stv);
 	device_context->OMSetRenderTargets(1, existing_view.GetAddressOf(), nullptr);
 }
 
-void CoreEngine::EndStencilClipping()
+void CoreEngine::EndStencilClipping(unsigned int ref_value)
 {
-	device_context->OMSetDepthStencilState(STENCIL_PASS_STATE.Get(), 1);
+	device_context->OMSetDepthStencilState(STENCIL_PASS_STATE.Get(), ref_value);
 }
 
-void CoreEngine::BeginStencilClipping()
+void CoreEngine::BeginStencilClipping(unsigned int ref_value)
 {
-	device_context->OMSetDepthStencilState(STENCIL_CLIP_STATE.Get(), 1);
+	device_context->OMSetDepthStencilState(STENCIL_CLIP_STATE.Get(), ref_value);
 }
 
 StencilBuffer CoreEngine::CreateStencilBuffer(unsigned int width, unsigned int height)

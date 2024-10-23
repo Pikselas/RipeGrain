@@ -3,7 +3,6 @@
 #include "RepulsiveEngine/CustomWindow.h"
 
 #include "EngineComponent.h"
-#include "UIComponent.h"
 #include "SceneManager.h"
 
 namespace RipeGrain
@@ -15,8 +14,6 @@ namespace RipeGrain
 		CustomWindow& render_window;
 	private:
 		std::unique_ptr<WindowRenderer> window_render_surface;
-	private:
-		UIComponent main_ui_component;
 	private:
 		const Scene* scene = nullptr;
 	public:
@@ -32,7 +29,6 @@ namespace RipeGrain
 			{
 				scene->Render(renderer);
 			}
-			main_ui_component.Render(renderer, 0, 0);
 			window_render_surface->RenderFrame();
 		}
 
@@ -48,10 +44,6 @@ namespace RipeGrain
 				render_window.ResizeWindow(w, h);
 				window_render_surface = std::make_unique<WindowRenderer>(renderer.CreateRenderer(render_window));
 				renderer.SetRenderDevice(*window_render_surface);
-			}
-			else if (event_data.event_type_index == typeid(EventSetUIFrame))
-			{
-				main_ui_component = GetEventData<EventSetUIFrame>(event_data).component;
 			}
 		}
 	};

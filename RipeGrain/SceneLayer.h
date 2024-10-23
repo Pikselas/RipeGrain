@@ -30,7 +30,7 @@ namespace RipeGrain
 		virtual void Render(CoreEngine&) const {};
 	};
 
-	class SceneObjectsLayer final : public SceneLayer
+	class ObjectsLayer final : public SceneLayer
 	{
 	protected:
 		std::vector<SceneObject*> objects;

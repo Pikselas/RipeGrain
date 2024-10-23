@@ -48,9 +48,9 @@ public:
 	void SetStencilBuffer(StencilBuffer& buffer);
 	void ClearStencilBuffer(StencilBuffer& buffer);
 public:
-	void EndStencilClipping();
 	void RemoveStencilBuffer();
-	void BeginStencilClipping();
+	void EndStencilClipping(unsigned int ref_value);
+	void BeginStencilClipping(unsigned int ref_value);
 public:
 	StencilBuffer CreateStencilBuffer(unsigned int width, unsigned int height);
 public:
