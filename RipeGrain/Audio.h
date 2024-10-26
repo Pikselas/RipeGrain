@@ -227,7 +227,7 @@ namespace RipeGrain
 
     std::unique_ptr<Event> CreatePlayBackEvent(EventPlayAudio event)
     {
-        return std::make_unique<EventObject<EventPlayAudio>>(CreateEventObject<EventPlayAudio>(event));
+        return CreateEventObject<EventPlayAudio>(event);
     }
 
     std::unique_ptr<Event> CreatePlayBackEvent(Audio& audio ,bool play_immediate = true , PlayBackHandle* handle = nullptr , float speed = 1.0f)

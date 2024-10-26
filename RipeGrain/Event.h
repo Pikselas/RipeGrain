@@ -41,6 +41,7 @@ namespace RipeGrain
 		Type type;
 		int delta;
 		int x_pos, y_pos;
+		int client_x, client_y;
 	};
 
 	struct EventKeyBoardInput
@@ -78,9 +79,9 @@ namespace RipeGrain
 	};
 
 	template<typename T>
-	EventObject<T> CreateEventObject(T data)
+	std::unique_ptr<Event> CreateEventObject(T data)
 	{
-		return EventObject<T>{data};
+		return std::make_unique<EventObject<T>>(std::move(data));
 	}
 
 	template<typename T> 

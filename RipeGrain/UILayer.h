@@ -72,6 +72,6 @@ namespace RipeGrain
 
 	std::unique_ptr<Event> CreateUIRegisterEvent(UILayer* layer)
 	{
-		return std::make_unique<EventObject<EventRegisterUI>>(CreateEventObject<EventRegisterUI>(EventRegisterUI{ layer }));
+		return CreateEventObject<EventRegisterUI>(EventRegisterUI{ layer });
 	}
 }

@@ -13,27 +13,16 @@ namespace RipeGrain
 	
 	class Scene;
 
-	class SceneLoader
+	class SceneLoader : public EngineEventRaiser
 	{
-	public:
-		std::function<void(Scene& , CoreEngine& engine)> OnSceneLoaded;
-		std::function<void(std::unique_ptr<Event>)> SceneEventRaiser;
-	private:
-		CoreEngine& sprite_engine;
-		std::unique_ptr<Scene> current_scene;
-	public:
-		SceneLoader(CoreEngine& sprite_engine) : sprite_engine(sprite_engine) {}
 	public:
 		template<typename T, typename... ParamsT>
 		void LoadScene(ParamsT&& ... params)
 		{
-			current_scene = std::make_unique<T>(params...);
-			if (OnSceneLoaded)
-				OnSceneLoaded(*current_scene , sprite_engine);
-		}
-		void RegisterEvent(std::unique_ptr<Event> ev)
-		{
-			SceneEventRaiser(std::move(ev));
+			auto current_scene = new T(params...);
+			current_scene->SetSceneLoader(this);
+			auto scene_event = CreateEventObject(std::move(EventSceneLoaded{ current_scene }));
+			RaiseEvent(std::move(scene_event));
 		}
 	};
 
@@ -46,14 +35,23 @@ namespace RipeGrain
 		CoreEngine* sprite_engine = nullptr;
 		SceneLoader* scene_loader = nullptr;
 	private:
+		std::function<void(std::unique_ptr<Event>)> event_raiser;
+	private:
 		std::vector<SceneLayer*> layers;
 	public:
 		virtual ~Scene() = default;
 	public:
-		void ApplySceneArguments(CoreEngine& engine, SceneLoader& loader)
+		void SetSceneLoader(SceneLoader* loader)
 		{
-			sprite_engine = &engine;
-			scene_loader = &loader;
+			scene_loader = loader;
+		}
+		void SetSceneSpriteEngine(CoreEngine* engine)
+		{
+			sprite_engine = engine;
+		}
+		void SetSceneEventRiaser(std::function<void(std::unique_ptr<Event>)> event_raiser)
+		{
+			this->event_raiser = event_raiser;
 		}
 	protected:
 		unsigned int GetViewPortWidth() const
@@ -75,13 +73,13 @@ namespace RipeGrain
 		}
 		inline void RegisterEvent(std::unique_ptr<Event> ev)
 		{
-			scene_loader->RegisterEvent(std::move(ev));
+			event_raiser(std::move(ev));
 		}
 		inline void SetViewPortSize(unsigned int width, unsigned int height)
 		{
 			view_port_width = width;
 			view_port_height = height;
-			RegisterEvent(std::make_unique<EventObject<EventResizeScreen>>(CreateEventObject(EventResizeScreen{.width = width , .height = height})));
+			RegisterEvent(CreateEventObject(EventResizeScreen{.width = width , .height = height}));
 		}
 	protected:
 		template<typename T , typename... ParamsT>
@@ -143,29 +141,11 @@ namespace RipeGrain
 	class SceneManager : public EngineEventRaiser , public EngineEventSubscriber
 	{
 	private:
-		Scene* current_scene = nullptr;
+		//SceneLoader* scene_loader;
+		CoreEngine& sprite_engine;
+		std::unique_ptr<Scene> current_scene;
 	public:
-		SceneManager(SceneLoader& scene_loader)
-		{
-			scene_loader.OnSceneLoaded = [&,this](Scene& scene , CoreEngine& engine)
-				{
-					scene.ApplySceneArguments(engine, scene_loader);
-					onSceneLoad(scene);
-				};
-			scene_loader.SceneEventRaiser = [this](std::unique_ptr<Event> ev)
-				{
-					RaiseEvent(std::move(ev));
-				};
-		}
-	private:
-		void onSceneLoad(Scene& scene)
-		{
-			current_scene = &scene;
-			auto scene_event = std::make_unique<EventObject<EventSceneLoaded>>(CreateEventObject(EventSceneLoaded{current_scene}));
-			RaiseEvent(std::move(scene_event));
-
-			scene.Initialize();
-		}
+		SceneManager(CoreEngine& engine) : sprite_engine(engine){}
 	public:
 		void OnUpdate() override
 		{
@@ -176,8 +156,20 @@ namespace RipeGrain
 		}
 		void OnEventReceive(Event& ev) override
 		{
-			if (current_scene)
+			if (ev.event_type_index == typeid(EventSceneLoaded))
+			{
+				current_scene.reset(GetEventData<EventSceneLoaded>(ev).scene);
+				current_scene->SetSceneSpriteEngine(&sprite_engine);
+				current_scene->SetSceneEventRiaser([this](std::unique_ptr<Event> ev) 
+					{
+						RaiseEvent(std::move(ev));
+					});
+				current_scene->Initialize();
+			}
+			else if (current_scene)
+			{
 				current_scene->OnEventReceive(ev);
+			}
 		}
 	};
 }

@@ -161,4 +161,23 @@ namespace RipeGrain
 			}
 		}
 	};
+
+	void SetTextAtMiddle(Image& img, ColorType color ,  std::wstring s, Font& font)
+	{
+		auto [txt_w, txt_h] = font.CalculateTextSize(s);
+		txt_h /= 2;
+		txt_w /= 2;
+		auto y = img.GetHeight() / 2 - txt_h;
+		auto x = img.GetWidth() / 2 - txt_w;
+
+		img.DrawString(s,color ,x , y , font);
+	}
+
+	void SetTextMiddleHorizontally(Image& img, ColorType color, std::wstring s, Font& font , unsigned int y_pos)
+	{
+		auto [txt_w, txt_h] = font.CalculateTextSize(s);
+		txt_w /= 2;
+		auto x = img.GetWidth() / 2 - txt_w;
+		img.DrawString(s, color, x, y_pos, font);
+	}
 }

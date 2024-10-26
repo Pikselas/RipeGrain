@@ -34,6 +34,8 @@ namespace RipeGrain
 			ev.type = type;
 			ev.x_pos = mouse.GetX();
 			ev.y_pos = mouse.GetY();
+			ev.client_x = mouse.GetX();
+			ev.client_y = mouse.GetY();
 			ev.delta = mouse.GetWheelDelta();
 			return ev;
 		}
@@ -49,7 +51,7 @@ namespace RipeGrain
 		template<typename T>
 		inline void raiseInputEvent(T input_ev)
 		{
-			RaiseEvent(std::make_unique<EventObject<T>>(CreateEventObject(input_ev)));
+			RaiseEvent(CreateEventObject(input_ev));
 		}
 	};
 }

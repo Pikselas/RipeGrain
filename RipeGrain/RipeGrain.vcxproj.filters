@@ -158,6 +158,9 @@
     <ClInclude Include="RepulsiveEngine\StencilBuffer.h">
       <Filter>RepulsiveEngine</Filter>
     </ClInclude>
+    <ClInclude Include="RepulsiveEngine\Font.h">
+      <Filter>RepulsiveEngine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="RepulsiveEngine\PixelShader.hlsl">

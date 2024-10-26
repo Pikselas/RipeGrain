@@ -156,6 +156,7 @@
     <ClInclude Include="RepulsiveEngine\AnimatedSprite.h" />
     <ClInclude Include="RepulsiveEngine\CoreEngine.h" />
     <ClInclude Include="RepulsiveEngine\CustomWindow.h" />
+    <ClInclude Include="RepulsiveEngine\Font.h" />
     <ClInclude Include="RepulsiveEngine\GDIPlusManager.h" />
     <ClInclude Include="RepulsiveEngine\Image.h" />
     <ClInclude Include="RepulsiveEngine\ImageSprite.h" />

@@ -52,6 +52,16 @@ void Image::DrawLine(unsigned int x1, unsigned int y1, unsigned int x2, unsigned
 	graphics.DrawLine(&pen, (int)x1, (int)y1, (int)x2, (int)y2);
 }
 
+void Image::DrawString(const std::wstring& text, ColorType color, unsigned int x, unsigned int y, Font& font)
+{
+	Gdiplus::Graphics graphics(bitmap.get());
+	graphics.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
+	Gdiplus::SolidBrush brush(Gdiplus::Color(color.a, color.r, color.g, color.b));
+
+	Gdiplus::PointF pnt(x, y);
+	graphics.DrawString(text.c_str(), text.size(), font.font.get(), pnt, &brush);
+}
+
 void Image::Clear(ColorType color)
 {
 	Gdiplus::Graphics graphics(bitmap.get());

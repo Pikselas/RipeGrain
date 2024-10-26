@@ -86,12 +86,7 @@ namespace RipeGrain
 			
 				if (!collision_list.empty())
 				{
-					decltype(EventCollisionDetected::collision_list) list;
-					for (auto& [c, s] : collision_list)
-					{
-						list.emplace_back(c, std::vector<BoxCollider>{s.begin(), s.end()});
-					}
-					RaiseEvent(std::make_unique<EventObject<EventCollisionDetected>>(CreateEventObject(EventCollisionDetected{ std::move(list) })));
+					RaiseEvent(CreateEventObject(EventCollisionDetected{ collision_list }));
 				}
 			}
 		}
