@@ -7,10 +7,11 @@ namespace RipeGrain
 	{
 	protected:
 		DirectX::XMVECTOR position;
+		DirectX::XMMATRIX transformation;
 	protected:
 		std::vector<ImageSprite> sprites;
 	public:
-		SceneObject() : position(DirectX::XMVectorZero()){}
+		SceneObject() : position(DirectX::XMVectorZero()) , transformation(DirectX::XMMatrixIdentity()){}
 		virtual ~SceneObject() = default;
 	public:
 		inline void AddSprite(ImageSprite sprite)
@@ -48,6 +49,19 @@ namespace RipeGrain
 		inline void SetPosition(DirectX::XMVECTOR position)
 		{
 			this->position = position;
+		}
+	public:
+		inline void SetScaling(float x, float y, float z)
+		{
+			transformation = DirectX::XMMatrixScaling(x, y, z);
+		}
+		inline void SetTransformation(DirectX::XMMATRIX transformation)
+		{
+			this->transformation = transformation;
+		}
+		inline DirectX::XMMATRIX GetTransformation() const
+		{
+			return transformation;
 		}
 	public:
 		inline int GetX() const

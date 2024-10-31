@@ -19,6 +19,8 @@ namespace RipeGrain
 		friend class UILayer;
 	private:
 		ImageSprite ui_sprite;
+	public:
+		bool Hidden = false;
 	private:
 		unsigned int max_page_size = 0;
 	private:
@@ -46,6 +48,9 @@ namespace RipeGrain
 		}
 		void OnEvent(EventMouseInput evnt)
 		{
+			if (Hidden)
+				return;
+
 			if(on_mouse)
 				on_mouse(evnt);
 
@@ -107,6 +112,10 @@ namespace RipeGrain
 			SetX(x);
 			SetY(y);
 		}
+		void SetPosition(DirectX::XMVECTOR pos)
+		{
+			ui_sprite.SetPosition(pos);
+		}
 	public:
 		void SetTexture(Texture tex)
 		{
@@ -143,8 +152,10 @@ namespace RipeGrain
 		}
 		void Render(CoreEngine& engine, int parent_x, int parent_y , unsigned int stencil_ref) const
 		{
-			auto sprite = ui_sprite;
+			if (Hidden)
+				return;
 
+			auto sprite = ui_sprite;
 			auto half_size = DirectX::XMVectorDivide(DirectX::XMVectorSet(sprite.GetWidth(), sprite.GetHeight(), 1, 1), DirectX::XMVectorSet(2, 2, 1, 1));
 			auto pos = DirectX::XMVectorAdd(sprite.GetPosition(), half_size);
 
@@ -172,7 +183,6 @@ namespace RipeGrain
 
 		img.DrawString(s,color ,x , y , font);
 	}
-
 	void SetTextMiddleHorizontally(Image& img, ColorType color, std::wstring s, Font& font , unsigned int y_pos)
 	{
 		auto [txt_w, txt_h] = font.CalculateTextSize(s);

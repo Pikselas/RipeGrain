@@ -21,6 +21,10 @@ public:
 	}
 	DirectX::XMMATRIX GetTransformation() const
 	{
+		return transformation;
+	}
+	DirectX::XMMATRIX GetTransformedWithPosition() const
+	{
 		return transformation * DirectX::XMMatrixTranslationFromVector(position);
 	}
 	DirectX::XMVECTOR GetPosition() const

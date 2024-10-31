@@ -21,7 +21,7 @@ private:
 public:
 	void Draw(RenderCommandEngine& engine) const override
 	{
-		engine.SetComponent(GetTransformation());
+		engine.SetComponent(GetTransformedWithPosition());
 		DrawNonTransformed(engine);
 	}
 
