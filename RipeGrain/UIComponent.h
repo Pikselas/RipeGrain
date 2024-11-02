@@ -21,6 +21,7 @@ namespace RipeGrain
 		ImageSprite ui_sprite;
 	public:
 		bool Hidden = false;
+	    bool Focused = false;
 	private:
 		unsigned int max_page_size = 0;
 	private:
@@ -33,6 +34,7 @@ namespace RipeGrain
 		std::function<void(UIPtr)> remove_self;
 	public:
 		std::function<void(EventMouseInput)> on_mouse = nullptr;
+		std::function<void(EventKeyBoardInput)> on_keyboard = nullptr;
 	private:
 		std::list<UIComponent> children;
 	public:
@@ -54,6 +56,8 @@ namespace RipeGrain
 			if(on_mouse)
 				on_mouse(evnt);
 
+			Focused = true;
+
 			evnt.x_pos -= DirectX::XMVectorGetX(page_position);
 			evnt.y_pos -= DirectX::XMVectorGetY(page_position);
 
@@ -65,11 +69,24 @@ namespace RipeGrain
 					evnt.y_pos = evnt.y_pos - child.GetY();
 					child.OnEvent(evnt);
 				}
+				else
+				{
+					child.Focused = false;
+				}
 			}
 		}
-		void OnEvent(CustomWindow::KeyBoard::EventT evnt)
+		void OnEvent(EventKeyBoardInput evnt)
 		{
+			if (on_keyboard)
+				on_keyboard(evnt);
 
+			for (auto& child : children)
+			{
+				if (child.Focused)
+				{
+					child.OnEvent(evnt);
+				}
+			}
 		}
 	public:
 		UIComponent() = default;
@@ -133,6 +150,11 @@ namespace RipeGrain
 		UIPtr AddComponent(UIComponentDescription desc)
 		{
 			return AddComponent(create_component(desc));
+		}
+	public:
+		void SetUITexture(Texture texture)
+		{
+			ui_sprite.SetTexture(texture);
 		}
 	public:
 		void ScrollBy(int y)

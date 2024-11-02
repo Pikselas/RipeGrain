@@ -37,6 +37,21 @@ namespace RipeGrain
 							component.OnEvent(m_ev);
 							break;
 						}
+						else
+						{
+							component.Focused = false;
+						}
+					}
+				}
+				else if (ev.event_type_index == typeid(EventKeyBoardInput))
+				{
+					for (auto& component : ui_layer->getComponents())
+					{
+						if (component.Focused)
+						{
+							component.OnEvent(GetEventData<EventKeyBoardInput>(ev));
+							return;
+						}
 					}
 				}
 			}
