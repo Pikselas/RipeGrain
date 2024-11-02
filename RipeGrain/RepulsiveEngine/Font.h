@@ -28,6 +28,7 @@ class Font
 private:
 	std::shared_ptr<Gdiplus::Font> font;
 public:
+	Font() = default;
 	Font(FontFamily& family, unsigned int font_size) : font(std::make_shared<Gdiplus::Font>(&family.family, font_size, Gdiplus::FontStyle::FontStyleRegular, Gdiplus::UnitPixel))
 	{}
 public:
