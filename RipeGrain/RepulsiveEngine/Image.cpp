@@ -62,6 +62,12 @@ void Image::DrawString(const std::wstring& text, ColorType color, unsigned int x
 	graphics.DrawString(text.c_str(), text.size(), font.font.get(), pnt, &brush);
 }
 
+void Image::DrawImage(const Image& img , unsigned int x , unsigned int y)
+{
+	Gdiplus::Graphics graphics(bitmap.get());
+	graphics.DrawImage(img.bitmap.get(), (INT)x, (INT)y);
+}
+
 void Image::Clear(ColorType color)
 {
 	Gdiplus::Graphics graphics(bitmap.get());
