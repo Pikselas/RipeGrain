@@ -52,6 +52,7 @@ namespace RipeGrain
 			KeyRelease
 		};
 		Type type;
+		bool is_repeated;
 		unsigned char key_code;
 	};
 

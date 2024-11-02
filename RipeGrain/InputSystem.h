@@ -22,8 +22,8 @@ namespace RipeGrain
 			}
 			else
 			{
-				device.OnKeyPress = [this](auto ev) { raiseInputEvent(ConstructEvent(EventKeyBoardInput::Type::KeyPress, ev.KEY_CODE));};
-				device.OnKeyRelease = [this](auto ev) { raiseInputEvent(ConstructEvent(EventKeyBoardInput::Type::KeyRelease, ev.KEY_CODE)); };
+				device.OnKeyPress = [this](auto ev) { raiseInputEvent(ConstructEvent(EventKeyBoardInput::Type::KeyPress, ev.KEY_CODE, ev.IS_REPEATED));};
+				device.OnKeyRelease = [this](auto ev) { raiseInputEvent(ConstructEvent(EventKeyBoardInput::Type::KeyRelease, ev.KEY_CODE, ev.IS_REPEATED));};
 			}
 		}
 	private:
@@ -40,11 +40,12 @@ namespace RipeGrain
 			return ev;
 		}
 
-		inline EventKeyBoardInput ConstructEvent(EventKeyBoardInput::Type type , unsigned char key_code)
+		inline EventKeyBoardInput ConstructEvent(EventKeyBoardInput::Type type , unsigned char key_code , bool repeated)
 		{
 			EventKeyBoardInput ev;
 			ev.type = type;
 			ev.key_code = key_code;
+			ev.is_repeated = repeated;
 			return ev;
 		}
 
