@@ -32,10 +32,11 @@ namespace RipeGrain
 					{
 						if (component.IsInRange(m_ev.x_pos , m_ev.y_pos))
 						{
-							m_ev.x_pos = m_ev.x_pos - component.GetX();
-							m_ev.y_pos = m_ev.y_pos - component.GetY();
-							component.OnEvent(m_ev);
-							break;
+							auto mev_data = m_ev;
+							mev_data.x_pos = m_ev.x_pos - component.GetX();
+							mev_data.y_pos = m_ev.y_pos - component.GetY();
+							component.OnEvent(mev_data);
+							//break;
 						}
 						else
 						{

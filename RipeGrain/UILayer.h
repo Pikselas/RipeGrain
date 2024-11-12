@@ -39,9 +39,9 @@ namespace RipeGrain
 		void Render(CoreEngine& engine) const override
 		{
 			engine.SetStencilBuffer(ui_clip_buffer);
-			engine.ClearStencilBuffer(ui_clip_buffer);
 			for (const auto& ui_component : components)
 			{
+				engine.ClearStencilBuffer(ui_clip_buffer);
 				ui_component.Render(engine, DirectX::XMVectorGetX(base_position), DirectX::XMVectorGetY(base_position) , 0);
 			}
 			engine.EndStencilClipping(1);

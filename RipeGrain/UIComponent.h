@@ -134,11 +134,6 @@ namespace RipeGrain
 			ui_sprite.SetPosition(pos);
 		}
 	public:
-		void SetTexture(Texture tex)
-		{
-			ui_sprite.SetTexture(tex);
-		}
-	public:
 		UIPtr AddComponent(UIComponent component)
 		{
 			max_page_size = (std::max)(max_page_size, component.GetHeight() + component.GetY());
@@ -192,6 +187,13 @@ namespace RipeGrain
 				child_ui.Render(engine, DirectX::XMVectorGetX(child_pos), DirectX::XMVectorGetY(child_pos),stencil_ref + 1);
 				engine.EndStencilClipping(stencil_ref + 1);
 			}
+		}
+	public:
+		void Clear()
+		{
+			page_position = DirectX::XMVectorZero();
+			max_page_size = 0;
+			children.clear();
 		}
 	};
 
