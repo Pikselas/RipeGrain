@@ -98,7 +98,7 @@ namespace RipeGrain
 		}
 		ImageSprite CreateSprite(Texture texture)
 		{
-			return sprite_engine->CreateSprite(texture, texture.GetWidth(), texture.GetWidth());
+			return sprite_engine->CreateSprite(texture, texture.GetWidth(), texture.GetHeight());
 		}
 		ImageSprite CreateSprite(Texture texture , unsigned int width , unsigned int height)
 		{
