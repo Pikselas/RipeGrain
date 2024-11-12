@@ -49,6 +49,7 @@ namespace RipeGrain
 		enum class Type
 		{
 			KeyPress,
+			CharInput,
 			KeyRelease
 		};
 		Type type;

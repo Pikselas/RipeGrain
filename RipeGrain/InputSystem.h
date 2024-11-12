@@ -19,9 +19,11 @@ namespace RipeGrain
 				device.OnLeftPress = [this](auto& wnd) { raiseInputEvent(ConstructEvent(wnd.mouse, EventMouseInput::Type::LeftPress)); };
 				device.OnRightPress = [this](auto& wnd) { raiseInputEvent(ConstructEvent(wnd.mouse, EventMouseInput::Type::RightPress)); };
 				device.OnWheel = [this](auto& wnd) { raiseInputEvent(ConstructEvent(wnd.mouse, EventMouseInput::Type::Wheel)); };
+				device.OnLeftDoubleClick = [this](auto& wnd) { raiseInputEvent(ConstructEvent(wnd.mouse, EventMouseInput::Type::LeftDoublePress)); };
 			}
 			else
 			{
+				device.OnCharInput = [this](auto ev) { raiseInputEvent(ConstructEvent(EventKeyBoardInput::Type::CharInput, ev.KEY_CODE, ev.IS_REPEATED)); };
 				device.OnKeyPress = [this](auto ev) { raiseInputEvent(ConstructEvent(EventKeyBoardInput::Type::KeyPress, ev.KEY_CODE, ev.IS_REPEATED));};
 				device.OnKeyRelease = [this](auto ev) { raiseInputEvent(ConstructEvent(EventKeyBoardInput::Type::KeyRelease, ev.KEY_CODE, ev.IS_REPEATED));};
 			}
