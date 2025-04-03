@@ -3,14 +3,23 @@
 #include <unordered_set>
 #include <unordered_map>
 
-
 namespace RipeGrain
 {
-	struct BoxColliderHasher
+	struct BoxColliderPair
 	{
-		std::size_t operator()(const BoxCollider& b) const
+		BoxCollider static_collider;
+		BoxCollider ref_collider;
+		std::size_t operator()(const BoxColliderPair& cp) const
 		{
+			auto& b = cp.static_collider;
 			return std::hash<int>()(b.GetLeft()) ^ std::hash<int>()(b.GetRight()) ^ std::hash<int>()(b.GetTop()) ^ std::hash<int>()(b.GetBottom());
+		}
+		bool operator==(const BoxColliderPair& other) const
+		{
+			return ref_collider == other.ref_collider /* ? true : collider.GetLeft() == other.collider.GetLeft() &&
+				collider.GetRight() == other.collider.GetRight() && 
+				collider.GetTop() == other.collider.GetTop() && 
+				collider.GetBottom() == other.collider.GetBottom()*/;
 		}
 	};
 
@@ -18,7 +27,7 @@ namespace RipeGrain
 	{
 	private:
 		unsigned int cell_side;
-		std::unordered_map<std::string, std::unordered_set<BoxCollider, BoxColliderHasher>> cells;
+		std::unordered_map<std::string, std::unordered_set<BoxColliderPair , BoxColliderPair>> cells;
 	public:
 		SpatialHashGrid(unsigned int cell_side) : cell_side(cell_side)
 		{}
@@ -46,35 +55,37 @@ namespace RipeGrain
 			}
 		}
 	public:
-		void Insert(BoxCollider collider)
+		void Insert(BoxCollider static_collider , BoxCollider dynamic_collider)
 		{
-			forEachCellKey(collider, [this , collider](std::string key) 
+			BoxColliderPair c{ .static_collider = static_collider , .ref_collider = dynamic_collider };
+			forEachCellKey(static_collider, [this , c](std::string key) 
 				{
-					cells[key].insert(collider);
+					cells[key].insert(c);
 				});
 		}
-		void Remove(BoxCollider collider)
+		void Remove(BoxCollider static_collider, BoxCollider dynamic_collider)
 		{
-			forEachCellKey(collider, [this, collider](std::string key)
+			BoxColliderPair c{ .static_collider = static_collider , .ref_collider = dynamic_collider }; 
+			forEachCellKey(static_collider, [this, c](std::string key)
 				{
-					cells[key].erase(collider);
+					cells[key].erase(c);
 				});
 		}
 		void Clear()
 		{
 			cells.clear();
 		}
-		std::vector<BoxCollider> FindNear(BoxCollider collider) const
+		std::vector<BoxCollider> FindNear(BoxCollider static_collider) const
 		{
 			std::vector <BoxCollider> colliders;
-			forEachCellKey(collider, [&,this](std::string key) 
+			forEachCellKey(static_collider, [&,this](std::string key) 
 				{
 					if (cells.contains(key))
 					{
 						for (auto& b : cells.at(key))
 						{
-							if(b != collider)
-							 colliders.push_back(b);
+							if(b.static_collider != static_collider)
+							 colliders.push_back(b.ref_collider);
 						}
 					}
 				});

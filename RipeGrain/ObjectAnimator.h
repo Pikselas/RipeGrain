@@ -95,6 +95,23 @@ namespace RipeGrain
 		}
 	};
 
+	class PredSpriteSheetAnimator : public ObjectAnimator
+	{
+	private:
+		std::function<std::pair<unsigned int, unsigned int>(int)> offset_pred;
+	protected:
+		void SetObjectFrame(ImageSprite& sprite, unsigned int frame_index) override
+		{
+			auto [x, y] = offset_pred(frame_index);
+			sprite.SetTextureCoord(x, y);
+		}
+	public:
+		void SetPredicator(decltype(offset_pred) pred)
+		{
+			offset_pred = pred;
+		}
+	};
+
 	class TextureBatchAnimator : public ObjectAnimator
 	{
 	private:
@@ -131,6 +148,53 @@ namespace RipeGrain
 			int old_y = DirectX::XMVectorGetY(sprite.GetPosition());
 			int old_z = DirectX::XMVectorGetZ(sprite.GetPosition());
 			sprite.SetPosition(DirectX::XMVectorSet(new_x, old_y, old_z , 1));
+		}
+	};
+
+	class MovementAnimator
+	{
+	private:
+		float t = 1.0f;
+		float speed = 0.05;
+		DirectX::XMVECTOR strt;
+		DirectX::XMVECTOR dest;
+	public:
+		void Cancel()
+		{
+			t = 1;
+			strt = dest = DirectX::XMVectorZero();
+		}
+		void Cancel(RipeGrain::SceneObject* object, const RipeGrain::BoxCollider& c1, const RipeGrain::BoxCollider& c2)
+		{
+			while (c1.IsCollidingWith(c2))
+			{
+				object->SetPosition(DirectX::XMVectorLerp(strt, dest, t -= 0.02));
+			}
+			dest = object->GetPosition();
+			t = 1.0f;
+		}
+		void SetDestination(DirectX::XMVECTOR pos_start, DirectX::XMVECTOR pos_end, float speed = 0.2)
+		{
+			t = 0.0f;
+			this->speed = speed;
+			strt = pos_start;
+			dest = pos_end;
+		}
+		void Update(RipeGrain::SceneObject* obj)
+		{
+			if (t >= 1.0f)
+				return;
+			t += speed;
+			obj->SetPosition(DirectX::XMVectorLerp(strt, dest, t));
+		}
+		bool ReachedDestination() const
+		{
+			return t >= 1.0f;
+		}
+	public:
+		std::pair<DirectX::XMVECTOR, DirectX::XMVECTOR> GetDestination() const
+		{
+			return { strt , dest };
 		}
 	};
 }

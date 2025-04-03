@@ -12,6 +12,7 @@ namespace RipeGrain
 		std::unique_ptr<SpatialHashGrid> hash_grid;
 	private:
 		std::vector<std::pair<BoxCollider , BoxCollider>> colliders;
+		std::vector<std::pair<BoxCollider, std::vector<BoxCollider>>> collision_list;
 	public:
 		void OnEventReceive(Event& ev) override
 		{
@@ -47,11 +48,12 @@ namespace RipeGrain
 			if (hash_grid != nullptr)
 			{
 				hash_grid->Clear();
+				collision_list.clear();
 
 				for (auto& [collider, static_collider] : colliders)
 				{
 					//hash_grid->Remove(static_collider);
-					hash_grid->Insert(collider.GetStaticCollider());
+					hash_grid->Insert(collider.GetStaticCollider() , collider);
 					static_collider = collider.GetStaticCollider();
 				}
 
@@ -62,25 +64,23 @@ namespace RipeGrain
 						return c1.GetLeft() == c2.GetLeft() && c1.GetRight() == c2.GetRight() && c1.GetTop() == c2.GetTop() && c1.GetBottom() == c2.GetBottom();
 					}
 				};
-				std::unordered_map<BoxCollider, std::unordered_set<BoxCollider, BoxColliderHasher , EqualBounds>, BoxColliderHasher , EqualBounds> collision_list;
+				//std::unordered_map<BoxCollider, std::unordered_set<BoxCollider, BoxColliderHasher , EqualBounds>, BoxColliderHasher , EqualBounds> collision_list;
 				
 				for (auto& [collider, static_collider] : colliders)
 				{
 					auto neighbours = hash_grid->FindNear(static_collider);
+					std::vector<BoxCollider> temp_lst;
 					for (auto& c : neighbours)
 					{
 						if (static_collider.IsCollidingWith(c))
 						{
-							collision_list[c].insert(collider);
-							collision_list[collider];
+							temp_lst.push_back(c);
 						}
 					}
 
-					if (auto itr = collision_list.find(static_collider); itr != collision_list.end())
+					if (!temp_lst.empty())
 					{
-						auto lst = std::move(itr->second);
-						collision_list.erase(itr);
-						collision_list[collider] = std::move(lst);
+						collision_list.emplace_back(collider , std::move(temp_lst));
 					}
 				}
 			
