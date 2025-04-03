@@ -60,11 +60,11 @@ namespace RipeGrain
             //system.engine->CreateSourceVoice(&voice, getFormat(), 0, XAUDIO2_DEFAULT_FREQ_RATIO, this, NULL, NULL);
         }
     public:
-        XAUDIO2_BUFFER* getBuffer()
+        const XAUDIO2_BUFFER* getBuffer() const
         {
             return &buffer;
         }
-        WAVEFORMATEX* getFormat()
+        WAVEFORMATEX* getFormat() const
         {
             return (WAVEFORMATEX*)&wfx;
         }
@@ -219,7 +219,7 @@ namespace RipeGrain
 
     struct EventPlayAudio
     {
-        Audio& audio;
+        const Audio& audio;
         bool PLAY_IMMEDIATE = true;
         PlayBackHandle* handle = nullptr;
         float PLAYBACK_SPEED = 1.0f;
@@ -230,7 +230,7 @@ namespace RipeGrain
         return CreateEventObject<EventPlayAudio>(event);
     }
 
-    std::unique_ptr<Event> CreatePlayBackEvent(Audio& audio ,bool play_immediate = true , PlayBackHandle* handle = nullptr , float speed = 1.0f)
+    std::unique_ptr<Event> CreatePlayBackEvent(const Audio& audio ,bool play_immediate = true , PlayBackHandle* handle = nullptr , float speed = 1.0f)
     {
         return CreatePlayBackEvent(EventPlayAudio{audio, play_immediate , handle , speed});
     }
