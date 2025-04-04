@@ -1,5 +1,6 @@
 ## TOY Framework for creating 2D games
-### Createing a Scene
+> developed using [RepulsiveEngine](https://github.com/Pikselas/Repulsive-Engine)
+### Creating a Scene
 > Refer [MainScene.h](RipeGrain/MainScene.h)
 ```C++
 #include "Audio.h"
