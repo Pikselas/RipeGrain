@@ -1,6 +1,7 @@
 #pragma once
 #include <chrono>
 #include <optional>
+#include <functional>
 #include "BoxCollider.h"
 #include "SceneObject.h"
 namespace RipeGrain

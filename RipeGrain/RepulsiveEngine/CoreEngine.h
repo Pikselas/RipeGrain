@@ -4,7 +4,6 @@
 #pragma comment(lib,"D3DCompiler.lib")
 
 #include"CustomWindow.h"
-#include"StencilBuffer.h"
 #include"MemoryRenderer.h"
 #include"WindowRenderer.h"
 #include"AnimatedSprite.h"
@@ -45,12 +44,12 @@ public:
 	void SetComponent(ID3D11ShaderResourceView* texture_view, std::pair<float, float> coord, std::pair<float, float> size) override;
 	void SetComponent(ID3D11Buffer* vertices) override;
 public:
-	void SetStencilBuffer(StencilBuffer& buffer);
-	void ClearStencilBuffer(StencilBuffer& buffer);
+	void SetStencilBuffer(StencilBuffer& buffer) override;
+	void ClearStencilBuffer(StencilBuffer& buffer) override;
 public:
-	void RemoveStencilBuffer();
-	void EndStencilClipping(unsigned int ref_value);
-	void BeginStencilClipping(unsigned int ref_value);
+	void RemoveStencilBuffer() override;
+	void EndStencilClipping(unsigned int ref_value) override;
+	void BeginStencilClipping(unsigned int ref_value) override;
 public:
 	StencilBuffer CreateStencilBuffer(unsigned int width, unsigned int height);
 public:

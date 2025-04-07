@@ -167,7 +167,7 @@ namespace RipeGrain
 		{
 			child->Remove();
 		}
-		void Render(CoreEngine& engine, int parent_x, int parent_y , unsigned int stencil_ref) const
+		void Render(RenderCommandEngine& engine, int parent_x, int parent_y , unsigned int stencil_ref) const
 		{
 			if (Hidden)
 				return;

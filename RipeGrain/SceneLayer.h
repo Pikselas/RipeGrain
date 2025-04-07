@@ -27,7 +27,7 @@ namespace RipeGrain
 		}
 	public:
 		virtual void Update() {};
-		virtual void Render(CoreEngine&) const {};
+		virtual void Render(RenderCommandEngine&) const {};
 	};
 
 	class ObjectsLayer final : public SceneLayer
@@ -62,7 +62,7 @@ namespace RipeGrain
 			}
 		}
 	public:
-		void Render(CoreEngine& engine) const override
+		void Render(RenderCommandEngine& engine) const override
 		{
 			for (const auto& obj : objects)
 			{

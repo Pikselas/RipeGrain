@@ -1,4 +1,5 @@
 #pragma once
+#include <queue>
 #include "SceneLayer.h"
 #include "UIComponent.h"
 #include "RepulsiveEngine/StencilBuffer.h"
@@ -36,7 +37,7 @@ namespace RipeGrain
 			return components;
 		}
 	public:
-		void Render(CoreEngine& engine) const override
+		void Render(RenderCommandEngine& engine) const override
 		{
 			engine.SetStencilBuffer(ui_clip_buffer);
 			for (const auto& ui_component : components)

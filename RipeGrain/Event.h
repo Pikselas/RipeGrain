@@ -1,6 +1,7 @@
 #pragma once
 #include <typeindex>
 #include <optional>
+#include <functional>
 #include "SceneObject.h"
 #include "BoxCollider.h"
 

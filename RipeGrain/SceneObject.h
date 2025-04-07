@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "RepulsiveEngine/CoreEngine.h"
+#include "RepulsiveEngine/ImageSprite.h"
 namespace RipeGrain
 {
 	class SceneObject
