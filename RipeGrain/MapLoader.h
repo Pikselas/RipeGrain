@@ -4,7 +4,7 @@
 #include <map>
 #include "SceneObject.h"
 #include "BoxCollider.h"
-#include "RepulsiveEngine/CoreEngine.h"
+#include "RepulsiveEngine/ResourceEngine.h"
 
 class Map
 {
@@ -15,11 +15,11 @@ private:
 	std::map<std::string,int> components_with_id;
 public:
 	Map() = default;
-	Map(CoreEngine& engine , std::filesystem::path mpig_data, std::filesystem::path texture)
+	Map(ResourceEngine& engine , std::filesystem::path mpig_data, std::filesystem::path texture)
 	{
 		Open(engine, mpig_data, texture);
 	}
-	void Open(CoreEngine& engine, std::filesystem::path mpig_data, std::filesystem::path texture)
+	void Open(ResourceEngine& engine, std::filesystem::path mpig_data, std::filesystem::path texture)
 	{
 		map_components.clear();
 		map_colliders.clear();

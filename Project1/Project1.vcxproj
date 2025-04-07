@@ -136,11 +136,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\RipeGrain\RepulsiveEngine\CoreEngine.cpp" />
-    <ClCompile Include="..\RipeGrain\RepulsiveEngine\CustomWindow.cpp" />
     <ClCompile Include="..\RipeGrain\RepulsiveEngine\GDIPlusManager.cpp" />
     <ClCompile Include="..\RipeGrain\RepulsiveEngine\Image.cpp" />
-    <ClCompile Include="..\RipeGrain\RepulsiveEngine\Window.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

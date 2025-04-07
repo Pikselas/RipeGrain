@@ -173,6 +173,9 @@
     <ClInclude Include="RpsLoader.h">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="RepulsiveEngine\ResourceEngine.h">
+      <Filter>RepulsiveEngine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="RepulsiveEngine\PixelShader.hlsl">

@@ -164,6 +164,7 @@
     <ClInclude Include="RepulsiveEngine\MemoryRenderer.h" />
     <ClInclude Include="RepulsiveEngine\RenderCommandEngine.h" />
     <ClInclude Include="RepulsiveEngine\RenderDevice.h" />
+    <ClInclude Include="RepulsiveEngine\ResourceEngine.h" />
     <ClInclude Include="RepulsiveEngine\Sprite.h" />
     <ClInclude Include="RepulsiveEngine\StandardWindow.h" />
     <ClInclude Include="RepulsiveEngine\StencilBuffer.h" />

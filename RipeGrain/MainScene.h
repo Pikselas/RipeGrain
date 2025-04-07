@@ -114,7 +114,7 @@ private:
 private:
 	std::unique_ptr<RipeGrain::SpriteSheetAnimator> front_animator;
 public:
-	void Init(CoreEngine& engine)
+	void Init(ResourceEngine& engine)
 	{
 		front_ = engine.CreateTexture(Image{"sneo_files/character/77x189_43.png"});
 		side_ = engine.CreateTexture(Image{"sneo_files/character/77x189_43_side.png"});
@@ -170,7 +170,7 @@ private:
 	ImageSprite sprite;
 	std::vector<Texture> texture_batch;
 public:
-	void Load(CoreEngine& engine)
+	void Load(ResourceEngine& engine)
 	{
 		for (int i = 0; i <= 14; ++i)
 		{
@@ -228,7 +228,7 @@ private:
 	Texture close_;
 	ImageSprite sprite_;
 public:
-	void Load(CoreEngine& engine)
+	void Load(ResourceEngine& engine)
 	{
 		open_ = engine.CreateTexture(Image{R"(C:\Users\Aritra Maji\Downloads\chest_open.png)"});
 		close_ = engine.CreateTexture(Image{ R"(C:\Users\Aritra Maji\Downloads\chest_closed.png)"});

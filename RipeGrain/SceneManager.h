@@ -4,7 +4,7 @@
 #include "SceneObject.h"
 #include "ObjectAnimator.h"
 #include "EngineComponent.h"
-#include "RepulsiveEngine/CoreEngine.h"
+#include "RepulsiveEngine/ResourceEngine.h"
 
 namespace RipeGrain
 {
@@ -42,7 +42,7 @@ namespace RipeGrain
 		unsigned int view_port_width;
 		unsigned int view_port_height;
 	private:
-		CoreEngine* sprite_engine = nullptr;
+		ResourceEngine* sprite_engine = nullptr;
 		SceneLoader* scene_loader = nullptr;
 	private:
 		std::function<void(std::unique_ptr<Event>)> event_raiser;
@@ -55,7 +55,7 @@ namespace RipeGrain
 		{
 			scene_loader = loader;
 		}
-		void SetSceneSpriteEngine(CoreEngine* engine)
+		void SetSceneSpriteEngine(ResourceEngine* engine)
 		{
 			sprite_engine = engine;
 		}
@@ -119,7 +119,7 @@ namespace RipeGrain
 			return sprite_engine->CreateSprite(CreateTexture(img) , width , height);
 		}
 	protected:
-		CoreEngine& getCoreEngine()
+		ResourceEngine& getCoreEngine()
 		{
 			return *sprite_engine;
 		}
@@ -144,7 +144,7 @@ namespace RipeGrain
 			return DirectX::XMVectorSubtract(DirectX::XMVectorSet(view_port_width, view_port_height, 0, 1) , base_position);
 		}
 	public:
-		void Render(CoreEngine& engine) const
+		void Render(RenderCommandEngine& engine) const
 		{
 			for (const auto& layer : layers)
 			{
@@ -157,11 +157,11 @@ namespace RipeGrain
 	{
 	private:
 		//SceneLoader* scene_loader;
-		CoreEngine& sprite_engine;
+		ResourceEngine& sprite_engine;
 		Scene* current_scene = nullptr;
 		std::function<void(Scene*)> scene_deleter;
 	public:
-		SceneManager(CoreEngine& engine) : sprite_engine(engine){}
+		SceneManager(ResourceEngine& engine) : sprite_engine(engine){}
 		~SceneManager()
 		{
 			if (current_scene)

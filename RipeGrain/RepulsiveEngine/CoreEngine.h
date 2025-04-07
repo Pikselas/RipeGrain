@@ -8,9 +8,11 @@
 #include"WindowRenderer.h"
 #include"AnimatedSprite.h"
 
+#include "ResourceEngine.h"
 #include "RenderCommandEngine.h"
 
-class CoreEngine : public RenderCommandEngine
+
+class CoreEngine : public RenderCommandEngine , public ResourceEngine
 {
 private:
 	template<typename ObjectT>
@@ -51,12 +53,12 @@ public:
 	void EndStencilClipping(unsigned int ref_value) override;
 	void BeginStencilClipping(unsigned int ref_value) override;
 public:
-	StencilBuffer CreateStencilBuffer(unsigned int width, unsigned int height);
+	StencilBuffer CreateStencilBuffer(unsigned int width, unsigned int height) override;
 public:
-	Texture CreateTexture(const Image& image);
+	Texture CreateTexture(const Image& image) override;
 public:
-	ImageSprite CreateSprite(const Image& image);
-	ImageSprite CreateSprite(Texture texture, unsigned int width , unsigned int height);
+	ImageSprite CreateSprite(const Image& image) override;
+	ImageSprite CreateSprite(Texture texture, unsigned int width , unsigned int height) override;
 	AnimatedSprite CreateSprite(const std::vector<Image>& frames , std::chrono::milliseconds duration , std::optional<unsigned int> repeat_count = std::nullopt);
 public:
 	MemoryRenderer CreateRenderer(Image& image);
