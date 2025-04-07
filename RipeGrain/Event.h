@@ -25,6 +25,7 @@ namespace RipeGrain
 	struct EventSceneLoaded
 	{
 		class Scene* scene;
+		std::function<void(Scene*)> deleter = nullptr;
 	};
 
 	struct EventMouseInput

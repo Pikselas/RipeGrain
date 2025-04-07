@@ -8,20 +8,30 @@
 
 namespace RipeGrain
 {
+	class Scene;
+
+	template<typename T>
+	concept CScene = std::is_base_of_v<Scene, T>;
+
 	template<typename T>
 	concept CSceneObject = std::is_base_of_v<SceneObject,T>;
-	
-	class Scene;
 
 	class SceneLoader : public EngineEventRaiser
 	{
 	public:
-		template<typename T, typename... ParamsT>
-		void LoadScene(ParamsT&& ... params)
+		template<CScene T, typename... ParamsT>
+		void LoadScene(ParamsT&& ... params , std::function<void(Scene*)> deleter = [](Scene* s) {delete s; })
 		{
 			auto current_scene = new T(params...);
 			current_scene->SetSceneLoader(this);
-			auto scene_event = CreateEventObject(std::move(EventSceneLoaded{ current_scene }));
+			auto scene_event = CreateEventObject(std::move(EventSceneLoaded{ current_scene , deleter }));
+			RaiseEvent(std::move(scene_event));
+		}
+		template<CScene T>
+		void LoadScene(T* scene , std::function<void(Scene*)> deleter)
+		{
+			auto scene_event = CreateEventObject(std::move(EventSceneLoaded{ scene , deleter }));
+			scene->SetSceneLoader(this);
 			RaiseEvent(std::move(scene_event));
 		}
 	};
@@ -113,6 +123,11 @@ namespace RipeGrain
 		{
 			return *sprite_engine;
 		}
+	protected:
+		SceneLoader* GetSceneLoader() const
+		{
+			return scene_loader;
+		}
 	public:
 		virtual void Update() 
 		{
@@ -143,9 +158,17 @@ namespace RipeGrain
 	private:
 		//SceneLoader* scene_loader;
 		CoreEngine& sprite_engine;
-		std::unique_ptr<Scene> current_scene;
+		Scene* current_scene = nullptr;
+		std::function<void(Scene*)> scene_deleter;
 	public:
 		SceneManager(CoreEngine& engine) : sprite_engine(engine){}
+		~SceneManager()
+		{
+			if (current_scene)
+			{
+				scene_deleter(current_scene);
+			}
+		}
 	public:
 		void OnUpdate() override
 		{
@@ -158,7 +181,12 @@ namespace RipeGrain
 		{
 			if (ev.event_type_index == typeid(EventSceneLoaded))
 			{
-				current_scene.reset(GetEventData<EventSceneLoaded>(ev).scene);
+				if(current_scene)
+					scene_deleter(current_scene);
+
+				current_scene = GetEventData<EventSceneLoaded>(ev).scene;
+				scene_deleter = GetEventData<EventSceneLoaded>(ev).deleter;
+
 				current_scene->SetSceneSpriteEngine(&sprite_engine);
 				current_scene->SetSceneEventRiaser([this](std::unique_ptr<Event> ev) 
 					{

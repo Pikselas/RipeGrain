@@ -25,6 +25,12 @@
     <Filter Include="Header Files\UI">
       <UniqueIdentifier>{93956e63-50d9-4e36-8bfe-bd382535c2f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Utils">
+      <UniqueIdentifier>{7e78085d-98eb-4c1a-a666-4beabc628714}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Settings">
+      <UniqueIdentifier>{67e03228-e874-426b-a87f-1dc2732b2188}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -161,6 +167,12 @@
     <ClInclude Include="RepulsiveEngine\Font.h">
       <Filter>RepulsiveEngine</Filter>
     </ClInclude>
+    <ClInclude Include="DynamicSceneLoader.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="RpsLoader.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="RepulsiveEngine\PixelShader.hlsl">
@@ -179,5 +191,10 @@
     <Image Include="favicon.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Startup.rps">
+      <Filter>Settings</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>
