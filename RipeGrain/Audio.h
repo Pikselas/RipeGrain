@@ -1,7 +1,8 @@
 #pragma once
 #include <wrl.h>
-#include <xaudio2.h>
+#include "Event.h"
 #include <memory>
+#include <xaudio2.h>
 #include <filesystem>
 
 #define fourccRIFF 'FFIR'
