@@ -1,4 +1,4 @@
-## TOY Framework for creating 2D games
+## TOY Framework for creating graphical applications
 > developed using [RepulsiveEngine](https://github.com/Pikselas/Repulsive-Engine)
 ### Creating a Scene
 > Refer [MainScene.h](RipeGrain/MainScene.h)
