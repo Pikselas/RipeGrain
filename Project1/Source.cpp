@@ -86,17 +86,29 @@ public:
 	}
 };
 
-std::unique_ptr<MainScene> base_scene = std::make_unique<MainScene>();
-void* GetScene()
-{
-	return base_scene.get();
-}
+//std::unique_ptr<MainScene> base_scene = std::make_unique<MainScene>();
+//void* GetScene()
+//{
+//	return base_scene.get();
+//}
+//
+//void UnloadScene(void* scene)
+//{
+//	if ( dynamic_cast<MainScene*>(static_cast<RipeGrain::Scene*>(scene)) != nullptr)
+//	{
+//		OutputDebugStringA("\n\nBaseS Unload\n\n");
+//		base_scene.reset();
+//	}
+//}
 
-void UnloadScene(void* scene)
+
+__declspec(dllimport) void initialize_engine();
+__declspec(dllimport) void play_scene(const char* title, void* scene, void(*deleter)(void*));
+
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	if ( dynamic_cast<MainScene*>(static_cast<RipeGrain::Scene*>(scene)) != nullptr)
-	{
-		OutputDebugStringA("\n\nBaseS Unload\n\n");
-		base_scene.reset();
-	}
+	initialize_engine();
+	auto scene = new BaseS();
+	play_scene("RipeGrain Scene", scene, [](void* s) { delete static_cast<RipeGrain::Scene*>(s); });
+	return 0;
 }

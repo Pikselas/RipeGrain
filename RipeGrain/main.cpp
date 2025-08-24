@@ -10,22 +10,30 @@
 #include "DynamicSceneLoader.h"
 #include "RpsLoader.h"
 
+
+__declspec(dllexport) void initialize_engine();
+__declspec(dllexport) void play_scene(const char* title, void* scene, void(*deleter)(void*));
+
 auto GetProgramDir()
 {
 	char buffer[MAX_PATH];
-	GetModuleFileName(nullptr, buffer, 100);
+	GetModuleFileName(GetModuleHandle(nullptr), buffer, 100);
 	std::filesystem::path path = buffer;
 	return path.parent_path();
 }
 
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+std::unique_ptr<CoreEngine> render_engine;
+
+void initialize_engine()
+{
+	render_engine = std::make_unique<CoreEngine>();
+}
+
+void play_scene(const char* title , void * scene , void(*deleter)(void*))
 {
 
-	RipeGrain::RipeGrainSettings rps;
-	rps.Load("Startup.rps");
-	CoreEngine render_engine;
-	StandardWindow window(rps.GetValue("Title"));
-	DynamicSceneLoader::Load( GetProgramDir() / rps.GetValue("Load"));
+	/*CoreEngine render_engine;*/
+	StandardWindow window(title);
 	
 	window.keyboard.EnableKeyRepeat();
 
@@ -35,10 +43,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		engine.ConfigureWith<RipeGrain::AudioSystem>();
 		engine.ConfigureWith<RipeGrain::PhysicsSystem>();
 		engine.ConfigureWith<RipeGrain::InputSystem>(window.mouse);
-		engine.ConfigureWith<RipeGrain::SceneManager>(render_engine);
+		engine.ConfigureWith<RipeGrain::SceneManager>(*render_engine);
 		engine.ConfigureWith<RipeGrain::InputSystem>(window.keyboard);
-		engine.ConfigureWith<RipeGrain::RenderSystem>(render_engine, window);
-		engine.ConfigureWith<RipeGrain::SceneLoader>().LoadScene(DynamicSceneLoader::GetScene(), DynamicSceneLoader::DeleteScene);
+		engine.ConfigureWith<RipeGrain::RenderSystem>(*render_engine, window);
+		engine.ConfigureWith<RipeGrain::SceneLoader>().LoadScene(reinterpret_cast<RipeGrain::Scene*>(scene), deleter);
 
 		while (window.IsOpen())
 		{
@@ -46,7 +54,4 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			Window::DispatchWindowEventsNonBlocking();
 		}
 	}
-
-	DynamicSceneLoader::Unload();
-	return 0;
 }
