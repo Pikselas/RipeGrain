@@ -22,7 +22,7 @@ namespace RipeGrain
 		template<CScene T, typename... ParamsT>
 		void LoadScene(ParamsT&& ... params , std::function<void(Scene*)> deleter = [](Scene* s) {delete s; })
 		{
-			auto current_scene = new T(params...);
+			auto current_scene = new T(std::forward<ParamsT>(params)...);
 			current_scene->SetSceneLoader(this);
 			auto scene_event = CreateEventObject(std::move(EventSceneLoaded{ current_scene , deleter }));
 			RaiseEvent(std::move(scene_event));
@@ -59,7 +59,7 @@ namespace RipeGrain
 		{
 			sprite_engine = engine;
 		}
-		void SetSceneEventRiaser(std::function<void(std::unique_ptr<Event>)> event_raiser)
+		void SetSceneEventRaiser(std::function<void(std::unique_ptr<Event>)> event_raiser)
 		{
 			this->event_raiser = event_raiser;
 		}
@@ -93,9 +93,9 @@ namespace RipeGrain
 		}
 	protected:
 		template<typename T , typename... ParamsT>
-		void LoadScene(ParamsT&& ... params)
+		void LoadScene(ParamsT&& ... params , std::function<void(Scene*)> deleter = [](Scene* s) {delete s; })
 		{
-			scene_loader->LoadScene<T>(params...);
+			scene_loader->LoadScene<T>(std::forward<ParamsT>(params)... , deleter);
 		}
 	protected:
 		Texture CreateTexture(const Image& img)
@@ -188,7 +188,7 @@ namespace RipeGrain
 				scene_deleter = GetEventData<EventSceneLoaded>(ev).deleter;
 
 				current_scene->SetSceneSpriteEngine(&sprite_engine);
-				current_scene->SetSceneEventRiaser([this](std::unique_ptr<Event> ev) 
+				current_scene->SetSceneEventRaiser([this](std::unique_ptr<Event> ev) 
 					{
 						RaiseEvent(std::move(ev));
 					});

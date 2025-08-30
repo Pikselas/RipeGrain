@@ -6,11 +6,6 @@
 #include "PhysicsSystem.h"
 #include "RepulsiveEngine/StandardWindow.h"
 
-#include "MainScene.h"
-#include "DynamicSceneLoader.h"
-#include "RpsLoader.h"
-
-
 __declspec(dllexport) void initialize_engine();
 __declspec(dllexport) void play_scene(const char* title, void* scene, void(*deleter)(void*));
 

@@ -23,8 +23,6 @@ private:
 		float x, y;
 	};
 private:
-	ObjectManager<ID3D11Device>				graphics_device;
-private:
 	ObjectManager<ID3D11InputLayout>		input_layout;
 private:
 	ObjectManager<ID3D11VertexShader>		vertex_shader;

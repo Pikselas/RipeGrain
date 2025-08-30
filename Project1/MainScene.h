@@ -1,9 +1,16 @@
 #pragma once
-#include "Audio.h"
-#include "UILayer.h"
-#include "BoxCollider.h"
-#include "SceneManager.h"
-#include "MapLoader.h"
+#include "../RipeGrain/Audio.h"
+#include "../RipeGrain/UILayer.h"
+#include "../RipeGrain/BoxCollider.h"
+#include "../RipeGrain/SceneManager.h"
+//#include "DynamicAABB.h"
+#include "../RipeGrain/MapLoader.h"
+
+//#include "FireFlyeScene.h"
+//#include "ReinaScene.h"
+//#include "ReikaOneeSanScene.h"
+
+#include "IkumisAdv.h"
 
 /////////////////
 class Snight;
@@ -16,8 +23,12 @@ public:
 	void Initialize() override
 	{
 
-		LoadScene<StartScene>();
-		//LoadScene<Snight>();
+		//LoadScene<StartScene>();
+		//LoadScene<ReikaOneeSanScene>();
+		//LoadScene<ReinaScene>();
+		//LoadScene<CityScene>();
+		//LoadScene<BarScene>();
+		LoadScene<Snight>();
 		return;
 	}
 	void Update() override
