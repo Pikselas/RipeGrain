@@ -34,13 +34,15 @@ void play_scene(const char* title , void * scene , void(*deleter)(void*))
 
 	{
 		RipeGrain::Engine engine;
+		RipeGrain::EngineProxyServiceLocator service_proxy_locator{ engine };
+
 		engine.ConfigureWith<RipeGrain::UISystem>();
 		engine.ConfigureWith<RipeGrain::AudioSystem>();
 		engine.ConfigureWith<RipeGrain::PhysicsSystem>();
 		engine.ConfigureWith<RipeGrain::InputSystem>(window.mouse);
-		engine.ConfigureWith<RipeGrain::SceneManager>(*render_engine);
 		engine.ConfigureWith<RipeGrain::InputSystem>(window.keyboard);
 		engine.ConfigureWith<RipeGrain::RenderSystem>(*render_engine, window);
+		engine.ConfigureWith<RipeGrain::SceneManager>(*render_engine, service_proxy_locator);
 		engine.ConfigureWith<RipeGrain::SceneLoader>().LoadScene(reinterpret_cast<RipeGrain::Scene*>(scene), deleter);
 
 		while (window.IsOpen())

@@ -1,13 +1,15 @@
 #pragma once
+#include <chrono>
 #include "RepulsiveEngine/CoreEngine.h"
 #include "RepulsiveEngine/CustomWindow.h"
 
+#include "EngineServices.h"
 #include "EngineComponent.h"
 #include "SceneManager.h"
 
 namespace RipeGrain
 {
-	class RenderSystem : public EngineEventSubscriber
+	class RenderSystem : public EngineEventSubscriber, public RenderService
 	{
 	private:
 		CoreEngine& renderer;
@@ -16,20 +18,29 @@ namespace RipeGrain
 		std::unique_ptr<WindowRenderer> window_render_surface;
 	private:
 		const Scene* scene = nullptr;
+	private:
+		float last_frame_delta = 0.0f;
 	public:
 		RenderSystem(CoreEngine& renderer ,CustomWindow& window): renderer(renderer),render_window(window), window_render_surface(std::make_unique<WindowRenderer>(renderer.CreateRenderer(window)))
 		{
 			renderer.SetRenderDevice(*window_render_surface);
 		}
+	public:
+		float GetFrameDelta() const override
+		{
+			return last_frame_delta;
+		}
 	public:	
 		void OnUpdate() override
 		{
+			auto start_time = std::chrono::high_resolution_clock::now();
 			renderer.ClearFrame(*window_render_surface);
 			if (scene)
 			{
 				scene->Render(renderer);
 			}
 			window_render_surface->RenderFrame();
+			last_frame_delta = std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - start_time).count();
 		}
 
 		void OnEventReceive(Event& event_data) override

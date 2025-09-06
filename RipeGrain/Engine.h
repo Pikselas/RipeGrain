@@ -21,9 +21,9 @@ namespace RipeGrain
 		Engine() = default;
 	public:
 		template<CEngineComponent Component , typename ... ParamsT>
-		Component& ConfigureWith(ParamsT&... params)
+		Component& ConfigureWith(ParamsT&&... params)
 		{
-			auto component = std::make_unique<Component>(params...);
+			auto component = std::make_unique<Component>(std::forward<ParamsT>(params)...);
 			
 			if constexpr (std::is_base_of_v<EngineEventSubscriber, Component>)
 			{
@@ -39,7 +39,7 @@ namespace RipeGrain
 			components.emplace_back(std::move(component));
 
 			return comp_ref;
-		}
+		}	
 		void Run()
 		{
 			while (!event_queue.empty())
@@ -57,6 +57,21 @@ namespace RipeGrain
 
 			for (auto& component : components)
 				component->OnUpdate();
+		}
+	public:
+		~Engine() = default;
+	public:
+		template<typename T>
+		T* QueryComponent()
+		{
+			for (auto& component : components)
+			{
+				if (auto casted = dynamic_cast<T*>(component.get()); casted != nullptr)
+				{
+					return casted;
+				}
+			}
+			return nullptr;
 		}
 	};
 }
