@@ -1,6 +1,9 @@
 #pragma once
 #include "Engine.h"
 #include "ProxyComponent.h"
+#include "../Crotine/Xecutor.hpp"
+#include "../Crotine/TaskRunner.hpp"
+
 namespace RipeGrain
 {
 	class RenderService
@@ -16,6 +19,28 @@ namespace RipeGrain
 		static RenderService& DefaultInstance()
 		{
 			static RenderService instance;
+			return instance;
+		}
+	};
+
+	class ExecutionService
+	{
+	private:
+		Crotine::Xecutor executor;
+		Crotine::TaskRunner runner;
+	public:
+		ExecutionService() : runner(executor) {}
+	public:
+		void Execute(auto&& f , auto&&... params)
+		{
+			runner.Run(f, params...).detach();
+		}
+	public:
+		~ExecutionService() = default;
+	public:
+		static ExecutionService& DefaultInstance()
+		{
+			static ExecutionService instance;
 			return instance;
 		}
 	};
@@ -52,6 +77,20 @@ namespace RipeGrain
 			return service->GetFrameDelta();
 		}
 	};
+
+	class ExecutionServiceProxy
+	{
+	private:
+			ExecutionService* service;
+	public:
+		ExecutionServiceProxy() : service(&ExecutionService::DefaultInstance()) {}
+		ExecutionServiceProxy(ExecutionService& service) : service(&service) {}
+	public:
+		void Execute(auto&& f , auto&&... params)
+		{
+			service->Execute(f , params...);
+		}
+	};
 }
 
 namespace RipeGrain
@@ -61,5 +100,12 @@ namespace RipeGrain
 	{
 	public:
 		using proxy_type = RenderServiceProxy;
+	};
+
+	template <>
+	class ProxyComponent<ExecutionService> : public std::true_type
+	{
+		public:
+		using proxy_type = ExecutionServiceProxy;
 	};
 }

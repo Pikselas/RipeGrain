@@ -4,6 +4,7 @@
 #include "SceneObject.h"
 #include "ObjectAnimator.h"
 #include "EngineComponent.h"
+#include "EngineServices.h"
 #include "RepulsiveEngine/ResourceEngine.h"
 
 namespace RipeGrain
@@ -44,6 +45,7 @@ namespace RipeGrain
 	private:
 		ResourceEngine* sprite_engine = nullptr;
 		SceneLoader* scene_loader = nullptr;
+		EngineProxyServiceLocator* engine_proxy = nullptr;
 	private:
 		std::function<void(std::unique_ptr<Event>)> event_raiser;
 	private:
@@ -58,6 +60,10 @@ namespace RipeGrain
 		void SetSceneSpriteEngine(ResourceEngine* engine)
 		{
 			sprite_engine = engine;
+		}
+		void SetSceneEngineProxyServiceLocator(EngineProxyServiceLocator* proxy)
+		{
+			engine_proxy = proxy;
 		}
 		void SetSceneEventRaiser(std::function<void(std::unique_ptr<Event>)> event_raiser)
 		{
@@ -119,6 +125,11 @@ namespace RipeGrain
 			return sprite_engine->CreateSprite(CreateTexture(img) , width , height);
 		}
 	protected:
+		EngineProxyServiceLocator& getProxyServiceLocator()
+		{
+			return *engine_proxy;
+		}
+	protected:
 		ResourceEngine& getCoreEngine()
 		{
 			return *sprite_engine;
@@ -158,10 +169,11 @@ namespace RipeGrain
 	private:
 		//SceneLoader* scene_loader;
 		ResourceEngine& sprite_engine;
+		EngineProxyServiceLocator& engine_proxy;
 		Scene* current_scene = nullptr;
 		std::function<void(Scene*)> scene_deleter;
 	public:
-		SceneManager(ResourceEngine& engine) : sprite_engine(engine){}
+		SceneManager(ResourceEngine& engine , EngineProxyServiceLocator& engine_proxy) : sprite_engine(engine), engine_proxy(engine_proxy){}
 		~SceneManager()
 		{
 			if (current_scene)
@@ -192,6 +204,7 @@ namespace RipeGrain
 					{
 						RaiseEvent(std::move(ev));
 					});
+				current_scene->SetSceneEngineProxyServiceLocator(&engine_proxy);
 				current_scene->Initialize();
 			}
 			else if (current_scene)
