@@ -185,17 +185,22 @@ namespace RipeGrain
         void Stop()
         {
             isStopped = true;
-            voice->Stop();
+            if(voice)
+             voice->Stop();
         }
         void Play(Audio& audio)
         {
-            isStopped = false;
-            //voice->FlushSourceBuffers();
-            voice->SubmitSourceBuffer(audio.getBuffer());
-            voice->Start();
+            if (voice)
+            {
+                //voice->FlushSourceBuffers();
+                isStopped = false;
+                voice->SubmitSourceBuffer(audio.getBuffer());
+                voice->Start();
+            }
         }
         void SetSpeed(float freq)
         {
+            if(voice)
             voice->SetFrequencyRatio(freq);
         }
     public:

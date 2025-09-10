@@ -1,4 +1,5 @@
 #pragma once
+#include "Audio.h"
 #include "Engine.h"
 #include "ProxyComponent.h"
 #include "../Crotine/Xecutor.hpp"
@@ -45,6 +46,20 @@ namespace RipeGrain
 		}
 	};
 
+	class AudioService
+	{
+		public:
+			virtual ~AudioService() = default;
+		public:
+			virtual void GetPlayBackHandle(Audio& audio , PlayBackHandle& handle){}
+		public:
+			static AudioService& DefaultInstance()
+			{
+				static AudioService instance;
+				return instance;
+			}
+	};
+
 	class EngineProxyServiceLocator
 	{
 	private:
@@ -64,6 +79,7 @@ namespace RipeGrain
 
 namespace RipeGrain
 {
+
 	class RenderServiceProxy
 	{
 	private:
@@ -91,6 +107,20 @@ namespace RipeGrain
 			service->Execute(f , params...);
 		}
 	};
+
+	class AudioServiceProxy
+	{
+	private:
+		AudioService* service;
+	public:
+		AudioServiceProxy() : service(&AudioService::DefaultInstance()) {}
+		AudioServiceProxy(AudioService& service) : service(&service) {}
+	public:
+		void GetPlayBackHandle(Audio& audio , PlayBackHandle& handle)
+		{
+			return service->GetPlayBackHandle(audio , handle);
+		}
+	};
 }
 
 namespace RipeGrain
@@ -107,5 +137,12 @@ namespace RipeGrain
 	{
 		public:
 		using proxy_type = ExecutionServiceProxy;
+	};
+
+	template <>
+	class ProxyComponent<AudioService> : public std::true_type
+	{
+		public:
+		using proxy_type = AudioServiceProxy;
 	};
 }

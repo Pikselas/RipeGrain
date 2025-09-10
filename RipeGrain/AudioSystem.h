@@ -4,6 +4,7 @@
 #include <xaudio2.h>
 
 #include "Audio.h"
+#include "EngineServices.h"
 #include "EngineComponent.h"
 
 namespace RipeGrain
@@ -44,7 +45,7 @@ namespace RipeGrain
 		void OnVoiceError(void* pBufferContext, HRESULT Error) override {}
 	};
 
-	class AudioSystem : public EngineEventSubscriber
+	class AudioSystem : public EngineEventSubscriber, public AudioService
 	{
 	private:
 		class CoInitializer
@@ -84,6 +85,12 @@ namespace RipeGrain
 		{
 			if (pMasteringVoice != nullptr)
 				pMasteringVoice->DestroyVoice();
+		}
+	public:
+		void GetPlayBackHandle(Audio& audio , PlayBackHandle& handle) override
+		{
+			engine->CreateSourceVoice(&handle.voice, audio.getFormat(), 0, XAUDIO2_DEFAULT_FREQ_RATIO, &handle);
+			handle.voice->SubmitSourceBuffer(audio.getBuffer());
 		}
 	public:
 		void OnUpdate() override
