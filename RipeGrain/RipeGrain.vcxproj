@@ -143,6 +143,7 @@
     <ClInclude Include="Audio.h" />
     <ClInclude Include="AudioSystem.h" />
     <ClInclude Include="EngineServices.h" />
+    <ClInclude Include="ExecutionSystem.h" />
     <ClInclude Include="ProxyComponent.h" />
     <ClInclude Include="BoxCollider.h" />
     <ClInclude Include="DynamicAABB.h" />

@@ -2,8 +2,6 @@
 #include "Audio.h"
 #include "Engine.h"
 #include "ProxyComponent.h"
-#include "../Crotine/Xecutor.hpp"
-#include "../Crotine/TaskRunner.hpp"
 
 namespace RipeGrain
 {
@@ -26,18 +24,16 @@ namespace RipeGrain
 
 	class ExecutionService
 	{
-	private:
-		Crotine::Xecutor executor;
 		Crotine::TaskRunner runner;
 	public:
-		ExecutionService() : runner(executor) {}
+		ExecutionService(Crotine::Executor& executor = Crotine::Executor::getDefaultExecutor()) : runner(executor) {}
 	public:
 		void Execute(auto&& f , auto&&... params)
 		{
 			runner.Run(f, params...).detach();
 		}
 	public:
-		~ExecutionService() = default;
+		virtual ~ExecutionService() = default;
 	public:
 		static ExecutionService& DefaultInstance()
 		{
@@ -58,6 +54,20 @@ namespace RipeGrain
 				static AudioService instance;
 				return instance;
 			}
+	};
+
+	class EngineServiceLocator
+	{
+	private:
+		Engine& engine;
+	public:
+		EngineServiceLocator(Engine& eng) : engine(eng) {}
+	public:
+		template<typename T>
+		T* QueryService()
+		{
+			return engine.QueryComponent<T>();
+		}
 	};
 
 	class EngineProxyServiceLocator
