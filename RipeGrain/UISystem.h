@@ -1,7 +1,9 @@
 #pragma once
 #include <memory>
 #include "UILayer.h"
+#include "SceneManager.h"
 #include "EngineComponent.h"
+
 namespace RipeGrain
 {
 	class UISystem : public EngineEventRaiser , public EngineEventSubscriber

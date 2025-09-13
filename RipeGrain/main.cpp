@@ -4,6 +4,7 @@
 #include "InputSystem.h"
 #include "RenderSystem.h"
 #include "PhysicsSystem.h"
+#include "ExecutionSystem.h"
 #include "RepulsiveEngine/StandardWindow.h"
 
 __declspec(dllexport) void initialize_engine();
@@ -39,11 +40,12 @@ void play_scene(const char* title , void * scene , void(*deleter)(void*))
 		engine.ConfigureWith<RipeGrain::UISystem>();
 		engine.ConfigureWith<RipeGrain::AudioSystem>();
 		engine.ConfigureWith<RipeGrain::PhysicsSystem>();
+		engine.ConfigureWith<RipeGrain::ExecutionSystem>();
 		engine.ConfigureWith<RipeGrain::InputSystem>(window.mouse);
 		engine.ConfigureWith<RipeGrain::InputSystem>(window.keyboard);
 		engine.ConfigureWith<RipeGrain::RenderSystem>(*render_engine, window);
 		engine.ConfigureWith<RipeGrain::SceneManager>(*render_engine, service_proxy_locator);
-		engine.ConfigureWith<RipeGrain::SceneLoader>().LoadScene(reinterpret_cast<RipeGrain::Scene*>(scene), deleter);
+		engine.ConfigureWith<RipeGrain::SceneLoader>().LoadSceneObject(reinterpret_cast<RipeGrain::Scene*>(scene), [deleter](RipeGrain::Scene* scene) {deleter(scene);});
 
 		while (window.IsOpen())
 		{

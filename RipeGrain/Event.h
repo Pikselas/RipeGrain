@@ -23,12 +23,6 @@ namespace RipeGrain
 		std::vector<std::pair<BoxCollider, std::vector<BoxCollider>>>& collision_list;
 	};
 
-	struct EventSceneLoaded
-	{
-		class Scene* scene;
-		std::function<void(Scene*)> deleter = nullptr;
-	};
-
 	struct EventMouseInput
 	{
 		enum class Type
@@ -81,7 +75,7 @@ namespace RipeGrain
 	public:
 		EventType data;
 	public:
-		EventObject(EventType data) : Event(typeid(EventType)) , data(data) {}
+		EventObject(EventType data) : Event(typeid(EventType)) , data(std::move(data)) {}
 	};
 
 	template<typename T>

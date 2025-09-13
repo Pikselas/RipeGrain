@@ -47,7 +47,7 @@ namespace RipeGrain
 		{
 			if (event_data.event_type_index == typeid(EventSceneLoaded))
 			{
-				scene = GetEventData<EventSceneLoaded>(event_data).scene;
+				scene = GetEventData<EventSceneLoaded>(event_data).scene.get();
 			}
 			else if (event_data.event_type_index == typeid(EventResizeScreen))
 			{

@@ -1,7 +1,13 @@
 #pragma once
+#include <concepts>
+#include <memory>
+#include <functional>
+#include <type_traits>
+
 #include "Audio.h"
 #include "Engine.h"
 #include "ProxyComponent.h"
+#include "../Crotine/TaskRunner.hpp"
 
 namespace RipeGrain
 {
@@ -54,6 +60,43 @@ namespace RipeGrain
 				static AudioService instance;
 				return instance;
 			}
+	};
+
+	class Scene;
+
+	template<typename T>
+	concept CScene = std::is_base_of_v<Scene, T>;
+
+	class SceneService
+	{
+	public:
+		using scene_deleter = std::function<void(Scene*)>;
+	public:
+		virtual ~SceneService() = default;
+	public:
+		static void default_scene_deleter(Scene* scene)
+		{
+			if(scene)
+			delete scene;
+		}
+	public:
+		 virtual void LoadSceneObject(std::unique_ptr<Scene, scene_deleter> scene) {}
+	public:
+		void LoadSceneObject(Scene* scene , scene_deleter deleter = default_scene_deleter)
+		{
+			LoadSceneObject(std::unique_ptr<Scene, scene_deleter>(scene, deleter));
+		}
+		template<CScene T, typename... ParamsT>
+		void LoadScene(ParamsT&& ... params, scene_deleter deleter = default_scene_deleter)
+		{
+			LoadSceneObject(new T(std::forward<ParamsT>(params)...), deleter);
+		}
+	public:
+		static SceneService& DefaultInstance()
+		{
+			static SceneService instance;
+			return instance;
+		}
 	};
 
 	class EngineServiceLocator
@@ -131,6 +174,21 @@ namespace RipeGrain
 			return service->GetPlayBackHandle(audio , handle);
 		}
 	};
+
+	class SceneServiceProxy
+	{
+	private:
+		SceneService* service;
+	public:
+		SceneServiceProxy() : service(&SceneService::DefaultInstance()) {}
+		SceneServiceProxy(SceneService& service) : service(&service) {}
+	public:
+		template<typename T, typename... ParamsT>
+		void LoadScene(ParamsT&& ... params)
+		{
+			service->LoadScene<T>(std::forward<ParamsT>(params)...);
+		}
+	};
 }
 
 namespace RipeGrain
@@ -155,4 +213,12 @@ namespace RipeGrain
 		public:
 		using proxy_type = AudioServiceProxy;
 	};
+
+	template <>
+	class ProxyComponent<SceneService> : public std::true_type
+	{
+	public:
+		using proxy_type = SceneServiceProxy;
+	};
+
 }

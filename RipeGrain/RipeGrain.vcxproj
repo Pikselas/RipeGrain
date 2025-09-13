@@ -145,6 +145,7 @@
     <ClInclude Include="EngineServices.h" />
     <ClInclude Include="ExecutionSystem.h" />
     <ClInclude Include="ProxyComponent.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="BoxCollider.h" />
     <ClInclude Include="DynamicAABB.h" />
     <ClInclude Include="DynamicSceneLoader.h" />
