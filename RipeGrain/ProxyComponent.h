@@ -9,7 +9,7 @@ namespace RipeGrain
 	// as proxy components by the engine
 	// the specialization must inherit from std::true_type
 	template <typename T>
-	class ProxyComponent : public std::false_type 
+	struct ProxyComponent : public std::false_type 
 	{
 		// overload this type alias to the type of the proxy
 		// in the specialization

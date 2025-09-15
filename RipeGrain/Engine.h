@@ -17,6 +17,8 @@ namespace RipeGrain
 		std::list<EngineEventSubscriber*> event_subscribers;
 	private:
 		std::queue<std::unique_ptr<Event>> event_queue;
+	private:
+		std::unordered_map<std::type_index, EngineComponent*> queried_components;
 	public:
 		Engine() = default;
 	public:
@@ -64,10 +66,16 @@ namespace RipeGrain
 		template<typename T>
 		T* QueryComponent()
 		{
+			if (auto ptr = queried_components.find(typeid(T)); ptr != queried_components.end())
+			{
+				return dynamic_cast<T*>(ptr->second);
+			}
+
 			for (auto& component : components)
 			{
 				if (auto casted = dynamic_cast<T*>(component.get()); casted != nullptr)
 				{
+					queried_components[typeid(T)] = component.get();
 					return casted;
 				}
 			}

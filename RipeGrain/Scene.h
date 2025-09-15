@@ -11,10 +11,6 @@ namespace RipeGrain
 	class Scene
 	{
 	private:
-		unsigned int view_port_width;
-		unsigned int view_port_height;
-	private:
-		ResourceEngine* sprite_engine = nullptr;
 		EngineProxyServiceLocator* engine_proxy = nullptr;
 	private:
 		std::function<void(std::unique_ptr<Event>)> event_raiser;
@@ -23,10 +19,6 @@ namespace RipeGrain
 	public:
 		virtual ~Scene() = default;
 	public:
-		void SetSceneSpriteEngine(ResourceEngine* engine)
-		{
-			sprite_engine = engine;
-		}
 		void SetSceneEngineProxyServiceLocator(EngineProxyServiceLocator* proxy)
 		{
 			engine_proxy = proxy;
@@ -38,11 +30,11 @@ namespace RipeGrain
 	protected:
 		unsigned int GetViewPortWidth() const
 		{
-			return view_port_width;
+			return getProxyServiceLocator().QueryProxyService<RenderService>().GetViewPortWidth();
 		}
 		unsigned int GetViewPortHeight() const
 		{
-			return view_port_height;
+			return getProxyServiceLocator().QueryProxyService<RenderService>().GetViewPortHeight();
 		}
 	public:
 		void AddLayer(SceneLayer* layer)
@@ -59,9 +51,7 @@ namespace RipeGrain
 		}
 		inline void SetViewPortSize(unsigned int width, unsigned int height)
 		{
-			view_port_width = width;
-			view_port_height = height;
-			RegisterEvent(CreateEventObject(EventResizeScreen{ .width = width , .height = height }));
+			getProxyServiceLocator().QueryProxyService<RenderService>().SetViewPortSize(width, height);
 		}
 	protected:
 		template<typename T, typename... ParamsT>
@@ -72,33 +62,33 @@ namespace RipeGrain
 	protected:
 		Texture CreateTexture(const Image& img)
 		{
-			return sprite_engine->CreateTexture(img);
+			return getCoreEngine().CreateTexture(img);
 		}
 		ImageSprite CreateSprite(const Image& img)
 		{
-			return sprite_engine->CreateSprite(img);
+			return getCoreEngine().CreateSprite(img);
 		}
 		ImageSprite CreateSprite(Texture texture)
 		{
-			return sprite_engine->CreateSprite(texture, texture.GetWidth(), texture.GetHeight());
+			return getCoreEngine().CreateSprite(texture, texture.GetWidth(), texture.GetHeight());
 		}
 		ImageSprite CreateSprite(Texture texture, unsigned int width, unsigned int height)
 		{
-			return sprite_engine->CreateSprite(texture, width, height);
+			return getCoreEngine().CreateSprite(texture, width, height);
 		}
 		ImageSprite CreateSprite(const Image& img, unsigned int width, unsigned int height)
 		{
-			return sprite_engine->CreateSprite(CreateTexture(img), width, height);
+			return getCoreEngine().CreateSprite(CreateTexture(img), width, height);
 		}
 	protected:
-		EngineProxyServiceLocator& getProxyServiceLocator()
+		EngineProxyServiceLocator& getProxyServiceLocator() const
 		{
 			return *engine_proxy;
 		}
 	protected:
 		ResourceEngine& getCoreEngine()
 		{
-			return *sprite_engine;
+			return getProxyServiceLocator().QueryProxyService<RenderService>().GetResourceEngine();
 		}
 	public:
 		virtual void Update()
@@ -115,7 +105,7 @@ namespace RipeGrain
 	protected:
 		DirectX::XMVECTOR GetWindowEdgeDistance(DirectX::XMVECTOR base_position) const
 		{
-			return DirectX::XMVectorSubtract(DirectX::XMVectorSet(view_port_width, view_port_height, 0, 1), base_position);
+			return DirectX::XMVectorSubtract(DirectX::XMVectorSet(GetViewPortWidth(), GetViewPortHeight(), 0, 1), base_position);
 		}
 	public:
 		void Render(RenderCommandEngine& engine) const

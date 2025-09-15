@@ -8,15 +8,37 @@
 #include "Engine.h"
 #include "ProxyComponent.h"
 #include "../Crotine/TaskRunner.hpp"
+#include "RepulsiveEngine/ResourceEngine.h"
 
 namespace RipeGrain
 {
 	class RenderService
 	{
+	private:
+		unsigned int viewport_width;
+		unsigned int viewport_height;
 	public:
 		virtual float GetFrameDelta() const
 		{
 			return 0.06f;
+		}
+		virtual ResourceEngine& GetResourceEngine() const
+		{
+			throw std::runtime_error("not implemented by default service ");
+		}
+		virtual void SetViewPortSize(unsigned int w , unsigned int h)
+		{
+			viewport_width = w;
+			viewport_height = h;
+		}
+	public:
+		unsigned int GetViewPortWidth() const
+		{
+			return viewport_width;
+		}
+		unsigned int GetViewPortHeight() const
+		{
+			return viewport_height;
 		}
 	public:
 		virtual ~RenderService() = default;
@@ -145,6 +167,22 @@ namespace RipeGrain
 		{
 			return service->GetFrameDelta();
 		}
+		ResourceEngine& GetResourceEngine() const
+		{
+			return service->GetResourceEngine();
+		}
+		void SetViewPortSize(unsigned int w, unsigned int h)
+		{
+			service->SetViewPortSize(w, h);
+		}
+		unsigned int GetViewPortWidth() const
+		{
+			return service->GetViewPortWidth();
+		}
+		unsigned int GetViewPortHeight() const
+		{
+			return service->GetViewPortHeight();
+		}
 	};
 
 	class ExecutionServiceProxy
@@ -193,32 +231,18 @@ namespace RipeGrain
 
 namespace RipeGrain
 {
-	template <>
-	class ProxyComponent<RenderService> : public std::true_type
+	template<typename U>
+	struct BindProxyToService : public std::true_type
 	{
-	public:
-		using proxy_type = RenderServiceProxy;
+		using proxy_type = U;
 	};
 
 	template <>
-	class ProxyComponent<ExecutionService> : public std::true_type
-	{
-		public:
-		using proxy_type = ExecutionServiceProxy;
-	};
-
+	struct ProxyComponent<AudioService> : public BindProxyToService<AudioServiceProxy> {};
 	template <>
-	class ProxyComponent<AudioService> : public std::true_type
-	{
-		public:
-		using proxy_type = AudioServiceProxy;
-	};
-
+	struct ProxyComponent<SceneService> : public BindProxyToService<SceneServiceProxy> {};
 	template <>
-	class ProxyComponent<SceneService> : public std::true_type
-	{
-	public:
-		using proxy_type = SceneServiceProxy;
-	};
-
+	struct ProxyComponent<RenderService> : public BindProxyToService<RenderServiceProxy> {};
+	template <>
+	struct ProxyComponent<ExecutionService> : public BindProxyToService<ExecutionServiceProxy> {};
 }

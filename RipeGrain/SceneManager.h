@@ -25,11 +25,10 @@ namespace RipeGrain
 	class SceneManager : public EngineEventRaiser , public EngineEventSubscriber
 	{
 	private:
-		ResourceEngine& sprite_engine;
 		EngineProxyServiceLocator& engine_proxy;
 		std::unique_ptr<Scene, SceneService::scene_deleter> current_scene = nullptr;
 	public:
-		SceneManager(ResourceEngine& engine , EngineProxyServiceLocator& engine_proxy) : sprite_engine(engine), engine_proxy(engine_proxy){}
+		SceneManager(EngineProxyServiceLocator& engine_proxy) : engine_proxy(engine_proxy){}
 		~SceneManager() = default;	
 	public:
 		void OnUpdate() override
@@ -44,7 +43,6 @@ namespace RipeGrain
 			if (ev.event_type_index == typeid(EventSceneLoaded))
 			{
 				current_scene = std::move(GetEventData<EventSceneLoaded>(ev).scene);
-				current_scene->SetSceneSpriteEngine(&sprite_engine);
 				current_scene->SetSceneEngineProxyServiceLocator(&engine_proxy);
 				current_scene->SetSceneEventRaiser(std::bind_front(&SceneManager::RaiseEvent , this));
 				

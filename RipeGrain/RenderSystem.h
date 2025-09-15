@@ -9,7 +9,7 @@
 
 namespace RipeGrain
 {
-	class RenderSystem : public EngineEventSubscriber, public RenderService
+	class RenderSystem : public EngineEventRaiser, public EngineEventSubscriber, public RenderService
 	{
 	private:
 		CoreEngine& renderer;
@@ -21,14 +21,31 @@ namespace RipeGrain
 	private:
 		float last_frame_delta = 0.0f;
 	public:
-		RenderSystem(CoreEngine& renderer ,CustomWindow& window): renderer(renderer),render_window(window), window_render_surface(std::make_unique<WindowRenderer>(renderer.CreateRenderer(window)))
+		RenderSystem(CoreEngine& renderer ,CustomWindow& window)
+			: 
+		renderer(renderer),
+		render_window(window),
+		window_render_surface(std::make_unique<WindowRenderer>(renderer.CreateRenderer(window)))
 		{
 			renderer.SetRenderDevice(*window_render_surface);
+			RenderService::SetViewPortSize(window.GetWidth(), window.GetHeight());
 		}
 	public:
 		float GetFrameDelta() const override
 		{
 			return last_frame_delta;
+		}
+		ResourceEngine& GetResourceEngine() const override
+		{
+			return renderer;
+		}
+		void SetViewPortSize(unsigned int w , unsigned int h) override
+		{
+			render_window.ResizeWindow(w, h);
+			window_render_surface = std::make_unique<WindowRenderer>(renderer.CreateRenderer(render_window));
+			renderer.SetRenderDevice(*window_render_surface);
+			RenderService::SetViewPortSize(w, h);
+			RaiseEvent(CreateEventObject(EventResizeScreen{ .width = w , .height = h }));
 		}
 	public:	
 		void OnUpdate() override
@@ -48,13 +65,6 @@ namespace RipeGrain
 			if (event_data.event_type_index == typeid(EventSceneLoaded))
 			{
 				scene = GetEventData<EventSceneLoaded>(event_data).scene.get();
-			}
-			else if (event_data.event_type_index == typeid(EventResizeScreen))
-			{
-				auto [w,h] = GetEventData<EventResizeScreen>(event_data);
-				render_window.ResizeWindow(w, h);
-				window_render_surface = std::make_unique<WindowRenderer>(renderer.CreateRenderer(render_window));
-				renderer.SetRenderDevice(*window_render_surface);
 			}
 		}
 	};
