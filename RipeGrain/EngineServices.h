@@ -6,6 +6,7 @@
 
 #include "Audio.h"
 #include "Engine.h"
+#include "TypeHelpers.h"
 #include "ProxyComponent.h"
 #include "../Crotine/TaskRunner.hpp"
 #include "RepulsiveEngine/ResourceEngine.h"
@@ -104,14 +105,43 @@ namespace RipeGrain
 	public:
 		 virtual void LoadSceneObject(std::unique_ptr<Scene, scene_deleter> scene) {}
 	public:
-		void LoadSceneObject(Scene* scene , scene_deleter deleter = default_scene_deleter)
+		void LoadSceneObject(Scene* scene , scene_deleter deleter)
 		{
 			LoadSceneObject(std::unique_ptr<Scene, scene_deleter>(scene, deleter));
 		}
 		template<CScene T, typename... ParamsT>
-		void LoadScene(ParamsT&& ... params, scene_deleter deleter = default_scene_deleter)
+		void LoadConstructedScene(ParamsT&& ... params, scene_deleter deleter = default_scene_deleter)
 		{
 			LoadSceneObject(new T(std::forward<ParamsT>(params)...), deleter);
+		}
+		template<CScene T, typename... ParamT>
+		void LoadScene(ParamT&& ... p)
+		{
+			if constexpr (sizeof...(ParamT) != 0)
+			{
+				if constexpr (std::is_same_v<Helpers::LastParamT<ParamT...>, scene_deleter>)
+				{
+					auto&& lp = Helpers::GetLastParam(std::forward<ParamT>(p)...);
+					auto t2 = Helpers::strip_tuple<ParamT&&...>(std::forward_as_tuple(std::forward<ParamT>(p)...));
+
+					std::apply([this,last_param = std::forward<decltype(lp)>(lp)](auto&&... p) mutable
+						{
+							LoadConstructedScene<T, decltype(p)...>(std::forward<decltype(p)>(p)..., std::forward<decltype(last_param)>(last_param));
+						}, t2);
+				}
+			}
+			else if constexpr (sizeof...(ParamT) == 1)
+			{
+				auto&& lp = Helpers::GetLastParam(std::forward<ParamT>(p)...);
+				if constexpr (std::is_same_v<std::decay_t<decltype(lp)>, scene_deleter>)
+				{
+					LoadConstructedScene<T>(std::forward<scene_deleter>(p));
+				}
+			}
+			else
+			{
+				LoadConstructedScene<T, ParamT...>(std::forward<decltype(p)>(p)...);
+			}
 		}
 	public:
 		static SceneService& DefaultInstance()
@@ -224,7 +254,7 @@ namespace RipeGrain
 		template<typename T, typename... ParamsT>
 		void LoadScene(ParamsT&& ... params)
 		{
-			service->LoadScene<T>(std::forward<ParamsT>(params)...);
+			service->LoadScene<T,ParamsT...>(std::forward<ParamsT>(params)...);
 		}
 	};
 }

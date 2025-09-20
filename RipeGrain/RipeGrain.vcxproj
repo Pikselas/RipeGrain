@@ -181,6 +181,7 @@
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SpatialHashGrid.h" />
+    <ClInclude Include="TypeHelpers.h" />
     <ClInclude Include="UIComponent.h" />
     <ClInclude Include="UILayer.h" />
     <ClInclude Include="UISystem.h" />
