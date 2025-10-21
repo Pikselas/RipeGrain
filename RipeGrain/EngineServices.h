@@ -133,9 +133,14 @@ namespace RipeGrain
 			else if constexpr (sizeof...(ParamT) == 1)
 			{
 				auto&& lp = Helpers::GetLastParam(std::forward<ParamT>(p)...);
-				if constexpr (std::is_same_v<std::decay_t<decltype(lp)>, scene_deleter>)
+				using last_p_t = decltype(lp);
+				if constexpr (std::is_same_v<last_p_t, scene_deleter>)
 				{
 					LoadConstructedScene<T>(std::forward<scene_deleter>(p));
+				}
+				else
+				{
+					LoadConstructedScene<T, last_p_t>(std::forward<last_p_t>(lp));
 				}
 			}
 			else
