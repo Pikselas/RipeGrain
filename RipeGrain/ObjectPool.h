@@ -29,18 +29,26 @@ namespace RipeGrain
             explicit pool_obj_holder(Args&&... args) : obj(std::forward<Args>(args)...) {}
         };
 
+        template<typename T , typename U>
+        concept CBaseClass = std::is_base_of_v<T, U>;
+
         template<typename T>
         class PoolObjectRef
         {
             friend class PoolObjectRef<PoolCommonType>;
+            template <typename U>
+            friend class PoolObjectRef;
         private:
             std::shared_ptr<PoolCommonType> obj_ref;
         public:
             PoolObjectRef() : obj_ref(nullptr) {}
             PoolObjectRef(std::shared_ptr<PoolCommonType> ref)
                 : obj_ref(std::move(ref))
-            {
-            }
+            {}
+            template <typename U>
+            requires CBaseClass<T,U>
+            PoolObjectRef(PoolObjectRef<U> other) : PoolObjectRef(other.obj_ref) {}
+        public:
             T* get() const
             {
                 return &dynamic_cast<pool_obj_holder<T>*>(obj_ref.get())->obj;
@@ -65,8 +73,7 @@ namespace RipeGrain
             template <typename T>
             PoolObjectRef(const PoolObjectRef<T>& other)
                 : obj_ref(other.obj_ref)
-            {
-            }
+            {}
         public:
             PoolCommonType* get() const { return obj_ref.get(); }
             PoolCommonType* operator->() const { return get(); }
