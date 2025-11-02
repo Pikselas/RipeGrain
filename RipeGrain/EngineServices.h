@@ -97,12 +97,6 @@ namespace RipeGrain
 	public:
 		virtual ~SceneService() = default;
 	public:
-		static void default_scene_deleter(Scene* scene)
-		{
-			if(scene)
-			delete scene;
-		}
-	public:
 		 virtual void LoadSceneObject(std::unique_ptr<Scene, scene_deleter> scene) {}
 	public:
 		void LoadSceneObject(Scene* scene , scene_deleter deleter)
@@ -110,7 +104,7 @@ namespace RipeGrain
 			LoadSceneObject(std::unique_ptr<Scene, scene_deleter>(scene, deleter));
 		}
 		template<CScene T, typename... ParamsT>
-		void LoadConstructedScene(ParamsT&& ... params, scene_deleter deleter = default_scene_deleter)
+		void LoadConstructedScene(ParamsT&& ... params, scene_deleter deleter = [](Scene* scene) { delete scene; })
 		{
 			LoadSceneObject(new T(std::forward<ParamsT>(params)...), deleter);
 		}
