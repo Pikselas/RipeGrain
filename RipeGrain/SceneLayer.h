@@ -69,13 +69,9 @@ namespace RipeGrain
 				const auto transform = obj->GetTransformation();
 				for (auto sprite : obj->GetSprites())
 				{
-					auto pos = DirectX::XMVectorAdd(obj->GetPosition(), sprite.GetPosition());
-					pos = DirectX::XMVectorAdd(base_position, pos);
-					sprite.SetPosition(pos);
-					auto transform2 = sprite.GetTransformation() * transform;
-					sprite.SetTransformation(transform2);
-					sprite.Draw(engine);
+					SceneObject::Get_Layer_Transformed_Sprite(*obj, base_position, sprite).Draw(engine);
 				}
+				obj->Render(engine , base_position);
 			}
 		}
 	};

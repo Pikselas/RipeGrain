@@ -24,7 +24,17 @@ namespace RipeGrain
 			return sprites;
 		}
 	public:
+		static ImageSprite Get_Layer_Transformed_Sprite(const SceneObject& obj , DirectX::XMVECTOR layer_pos, ImageSprite sprite)
+		{
+			auto pos = DirectX::XMVectorAdd(obj.GetPosition(), sprite.GetPosition());
+			pos = DirectX::XMVectorAdd(layer_pos, pos);
+			sprite.SetPosition(pos);
+			sprite.SetTransformation(sprite.GetTransformation() * obj.GetTransformation());
+			return sprite;
+		}
+	public:
 		virtual void Update() {}
+		virtual void Render(RenderCommandEngine& , const DirectX::XMVECTOR&) const {}
 	public:
 		inline void SetX(int x)
 		{
