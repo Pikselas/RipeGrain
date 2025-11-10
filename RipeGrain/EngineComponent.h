@@ -15,15 +15,15 @@ namespace RipeGrain
 	class EngineEventRaiser : public virtual EngineComponent
 	{
 	private:
-		std::queue<std::unique_ptr<Event>>* event_queue = nullptr;
+		std::queue<EngineEventObject>* event_queue = nullptr;
 	protected:
-		void RaiseEvent(std::unique_ptr<Event> ev)
+		void RaiseEvent(EngineEventObject ev)
 		{
 			ev->sender = this;
 			event_queue->push(std::move(ev));
 		}
 	public:
-		void SetEventQueue(std::queue<std::unique_ptr<Event>>* queue)
+		void SetEventQueue(std::queue<EngineEventObject>* queue)
 		{
 			event_queue = queue;
 		}

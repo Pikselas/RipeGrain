@@ -231,12 +231,12 @@ namespace RipeGrain
         float PLAYBACK_SPEED = 1.0f;
     };
 
-    std::unique_ptr<Event> CreatePlayBackEvent(EventPlayAudio event)
+    EngineEventObject CreatePlayBackEvent(EventPlayAudio event)
     {
         return CreateEventObject<EventPlayAudio>(event);
     }
 
-    std::unique_ptr<Event> CreatePlayBackEvent(const Audio& audio ,bool play_immediate = true , PlayBackHandle* handle = nullptr , float speed = 1.0f)
+    EngineEventObject CreatePlayBackEvent(const Audio& audio ,bool play_immediate = true , PlayBackHandle* handle = nullptr , float speed = 1.0f)
     {
         return CreatePlayBackEvent(EventPlayAudio{audio, play_immediate , handle , speed});
     }

@@ -4,6 +4,7 @@
 #include <functional>
 #include "SceneObject.h"
 #include "BoxCollider.h"
+#include "ObjectPool.h"
 
 namespace RipeGrain
 {
@@ -78,10 +79,21 @@ namespace RipeGrain
 		EventObject(EventType data) : Event(typeid(EventType)) , data(std::move(data)) {}
 	};
 
-	template<typename T>
-	std::unique_ptr<Event> CreateEventObject(T data)
+	inline Pool::ObjectPool object_pool;
+	using EngineEventObject = Pool::PoolObject<Event>;
+	//using EngineEventObject = std::unique_ptr<Event>;
+
+	template<typename T , typename... Args>
+	Pool::PoolObject<EventObject<T>> CreateEventObjectFromPool(Pool::ObjectPool& pool , Args&&... args)
 	{
-		return std::make_unique<EventObject<T>>(std::move(data));
+		return pool.acquire<EventObject<T>>(std::forward<Args>(args)...);
+	}
+
+	template<typename T>
+	EngineEventObject CreateEventObject(T data)
+	{
+		//return std::make_unique<EventObject<T>>(std::move(data));
+		return CreateEventObjectFromPool<T>(object_pool, std::move(data));
 	}
 
 	template<typename T> 

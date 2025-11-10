@@ -13,7 +13,7 @@ namespace RipeGrain
 	private:
 		EngineProxyServiceLocator* engine_proxy = nullptr;
 	private:
-		std::function<void(std::unique_ptr<Event>)> event_raiser;
+		std::function<void(EngineEventObject)> event_raiser;
 	private:
 		std::vector<SceneLayer*> layers;
 	public:
@@ -23,7 +23,7 @@ namespace RipeGrain
 		{
 			engine_proxy = proxy;
 		}
-		void SetSceneEventRaiser(std::function<void(std::unique_ptr<Event>)> event_raiser)
+		void SetSceneEventRaiser(std::function<void(EngineEventObject)> event_raiser)
 		{
 			this->event_raiser = event_raiser;
 		}
@@ -45,7 +45,7 @@ namespace RipeGrain
 		{
 			layers.erase(std::find(layers.begin(), layers.end(), layer));
 		}
-		inline void RegisterEvent(std::unique_ptr<Event> ev)
+		inline void RegisterEvent(EngineEventObject ev)
 		{
 			event_raiser(std::move(ev));
 		}

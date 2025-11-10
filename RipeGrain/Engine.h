@@ -16,7 +16,7 @@ namespace RipeGrain
 	private:
 		std::list<EngineEventSubscriber*> event_subscribers;
 	private:
-		std::queue<std::unique_ptr<Event>> event_queue;
+		std::queue<EngineEventObject> event_queue;
 	private:
 		std::unordered_map<std::type_index, EngineComponent*> queried_components;
 	public:
@@ -48,7 +48,7 @@ namespace RipeGrain
 			{
 				for (auto& component : event_subscribers)
 				{
-					auto& ev = *event_queue.front();
+					auto& ev = *event_queue.front().get();
 					if (dynamic_cast<EngineEventSubscriber*>(ev.sender) != component)
 					{
 						component->OnEventReceive(ev);

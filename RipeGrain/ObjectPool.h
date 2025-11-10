@@ -13,8 +13,12 @@ namespace RipeGrain
     {
         class PoolCommonType
         {
+        private:
+            const unsigned int byte_size = 0;
         public:
-            virtual ~PoolCommonType() = default;
+            PoolCommonType(unsigned int size) : byte_size(size) {}
+		public:
+			unsigned int size() const { return byte_size; }
         };
 
         class ObjectPool;
@@ -23,10 +27,12 @@ namespace RipeGrain
         struct pool_obj_holder : public PoolCommonType
         {
             T obj;
-            pool_obj_holder() = default;
-            ~pool_obj_holder() override = default;
+            pool_obj_holder() : PoolCommonType(sizeof(T)) {}
             template <typename... Args>
-            explicit pool_obj_holder(Args&&... args) : obj(std::forward<Args>(args)...) {}
+            explicit pool_obj_holder(Args&&... args) 
+                : 
+                PoolCommonType(sizeof(T)),
+                obj(std::forward<Args>(args)...) {}
         };
 
         template<typename T , typename U>
@@ -35,7 +41,6 @@ namespace RipeGrain
         template<typename T>
         class PoolObjectRef
         {
-            friend class PoolObjectRef<PoolCommonType>;
             template <typename U>
             friend class PoolObjectRef;
         private:
@@ -47,11 +52,20 @@ namespace RipeGrain
             {}
             template <typename U>
             requires CBaseClass<T,U>
-            PoolObjectRef(PoolObjectRef<U> other) : PoolObjectRef(other.obj_ref) {}
+            PoolObjectRef(const PoolObjectRef<U>& other) : PoolObjectRef(other.obj_ref) {}
+        public:
+            template <typename U>
+            requires CBaseClass<T, U>
+            PoolObjectRef& operator=(const PoolObjectRef<U>& other)
+            {
+                obj_ref = other.obj_ref;
+				return *this;
+            }
         public:
             T* get() const
             {
-                return &dynamic_cast<pool_obj_holder<T>*>(obj_ref.get())->obj;
+				unsigned int obj_size = obj_ref->size();
+                return &reinterpret_cast<pool_obj_holder<T>*>(obj_ref.get())->obj;
             }
             T* operator->() const
             {
@@ -81,7 +95,10 @@ namespace RipeGrain
             template <typename T>
             T& as() const
             {
-                return dynamic_cast<pool_obj_holder<T>*>(obj_ref.get())->obj;
+				auto size = obj_ref->size();
+                if(size != sizeof(T))
+					throw std::bad_cast();
+                return reinterpret_cast<pool_obj_holder<T>*>(obj_ref.get())->obj;
             }
         public:
             explicit operator bool() const { return static_cast<bool>(obj_ref); }
@@ -120,7 +137,7 @@ namespace RipeGrain
                 {
                     obj = std::move(pool[t_inf].back());
                     pool[t_inf].pop_back();
-                    new (&dynamic_cast<pool_obj_holder<T>*>(obj.get())->obj) T(std::forward<Args>(args)...);
+                    new (&reinterpret_cast<pool_obj_holder<T>*>(obj.get())->obj) T(std::forward<Args>(args)...);
                 }
                 else
                 {
@@ -133,7 +150,7 @@ namespace RipeGrain
             void release(PoolCommonType* obj)
             {
                 std::type_index t_inf = typeid(T);
-                dynamic_cast<pool_obj_holder<T>*>(obj)->obj.~T();
+                reinterpret_cast<pool_obj_holder<T>*>(obj)->obj.~T();
                 pool[t_inf].emplace_back(obj);
             }
         };
