@@ -3,6 +3,7 @@
 #include <map>
 #include <mutex>
 #include <memory>
+#include <atomic>
 #include <vector>
 #include <typeindex>
 #include <functional>
@@ -13,12 +14,32 @@ namespace RipeGrain
     {
         class PoolCommonType
         {
+            template <typename>
+            friend class PoolObjectRef;
         private:
             const unsigned int byte_size = 0;
+        private:
+            std::atomic_uint ref_count;
         public:
-            PoolCommonType(unsigned int size) : byte_size(size) {}
+            PoolCommonType(unsigned int size) : byte_size(size) , ref_count(0) {}
 		public:
 			unsigned int size() const { return byte_size; }
+        public:
+            void addReference()
+            {
+                ref_count.fetch_add(1);
+            }
+            void removeReference()
+            {
+                unsigned int expected = 0;
+                ref_count.compare_exchange_strong(expected , 1);
+                ref_count.fetch_sub(1);
+            }
+            bool isAllocationEnded()
+            {
+                unsigned int expected = 0;
+                return ref_count.compare_exchange_strong(expected , expected);
+            }
         };
 
         class ObjectPool;
@@ -38,34 +59,74 @@ namespace RipeGrain
         template<typename T , typename U>
         concept CBaseClass = std::is_base_of_v<T, U>;
 
+        class BasePoolObjectRef
+        {
+        protected:
+            PoolCommonType* obj_ref;
+        protected:
+            std::function<void(PoolCommonType*)> free_pool_object;
+        protected:
+            BasePoolObjectRef() : obj_ref(nullptr) {}
+            BasePoolObjectRef(PoolCommonType* ref, std::function<void(PoolCommonType*)> on_life_end)
+                :
+                obj_ref(ref),
+                free_pool_object(on_life_end)
+            {
+                if (obj_ref)
+                    obj_ref->addReference();
+            }
+            ~BasePoolObjectRef()
+            {
+                if (obj_ref)
+                {
+                    obj_ref->removeReference();
+                    if (obj_ref->isAllocationEnded())
+                        free_pool_object(obj_ref);
+                }
+            }
+        protected:
+            BasePoolObjectRef(const BasePoolObjectRef& other)
+            {
+                *this = other;
+            }
+        public:
+            BasePoolObjectRef& operator=(const BasePoolObjectRef& other)
+            {
+                obj_ref = other.obj_ref;
+                obj_ref->addReference();
+				free_pool_object = other.free_pool_object;
+                return *this;
+            }
+        };
+
         template<typename T>
-        class PoolObjectRef
+		class PoolObjectRef : private BasePoolObjectRef
         {
             template <typename U>
             friend class PoolObjectRef;
-        private:
-            std::shared_ptr<PoolCommonType> obj_ref;
         public:
-            PoolObjectRef() : obj_ref(nullptr) {}
-            PoolObjectRef(std::shared_ptr<PoolCommonType> ref)
-                : obj_ref(std::move(ref))
-            {}
             template <typename U>
             requires CBaseClass<T,U>
-            PoolObjectRef(const PoolObjectRef<U>& other) : PoolObjectRef(other.obj_ref) {}
+            PoolObjectRef(const PoolObjectRef<U>& other) 
+            {
+                *this = other;
+            }
+        public:
+			PoolObjectRef(PoolCommonType* ref, std::function<void(PoolCommonType*)> on_life_end) : BasePoolObjectRef(ref, on_life_end) {}
         public:
             template <typename U>
             requires CBaseClass<T, U>
             PoolObjectRef& operator=(const PoolObjectRef<U>& other)
             {
-                obj_ref = other.obj_ref;
-				return *this;
+				static_cast<BasePoolObjectRef&>(*this) = static_cast<const BasePoolObjectRef&>(other);
+                return *this;
             }
         public:
+            // undefined behaviour if T is a derived type rather than the type at the time of construction
             T* get() const
             {
 				unsigned int obj_size = obj_ref->size();
-                return &reinterpret_cast<pool_obj_holder<T>*>(obj_ref.get())->obj;
+                return &reinterpret_cast<pool_obj_holder<T>*>(obj_ref)->obj;
             }
             T* operator->() const
             {
@@ -76,20 +137,26 @@ namespace RipeGrain
         };
 
         template <>
-        class PoolObjectRef<PoolCommonType>
+		class PoolObjectRef<PoolCommonType> : private BasePoolObjectRef
         {
-        private:
-            std::shared_ptr<PoolCommonType> obj_ref;
         public:
             PoolObjectRef() = default;
-            PoolObjectRef(std::shared_ptr<PoolCommonType> ref) : obj_ref(std::move(ref)) {}
+			PoolObjectRef(PoolCommonType* ref, std::function<void(PoolCommonType*)> on_life_end) : BasePoolObjectRef(ref, on_life_end) {}
         public:
             template <typename T>
-            PoolObjectRef(const PoolObjectRef<T>& other)
-                : obj_ref(other.obj_ref)
-            {}
+            PoolObjectRef(const PoolObjectRef<T>& other) 
+            {
+                *this = other;
+			}
+            public:
+            template <typename T>
+            PoolObjectRef& operator=(const PoolObjectRef<T>& other)
+			{
+				static_cast<BasePoolObjectRef&>(*this) = static_cast<const BasePoolObjectRef&>(other);
+				return *this;
+			}
         public:
-            PoolCommonType* get() const { return obj_ref.get(); }
+            PoolCommonType* get() const { return obj_ref; }
             PoolCommonType* operator->() const { return get(); }
         public:
             template <typename T>
@@ -121,11 +188,10 @@ namespace RipeGrain
             template <typename T>
             static PoolObjectRef<T> convert_to_shared(ObjectPool* pool, PoolCommonType* obj)
             {
-                return { std::shared_ptr<PoolCommonType>
-                    (
+                return {
                         obj,
                         std::bind(&ObjectPool::return_to_pool_helper<T>, pool , std::placeholders::_1)
-                    ) };
+                       };
             }
         public:
             template <typename T, typename... Args>
